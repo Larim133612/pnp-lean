@@ -49,6 +49,11 @@ jobs:
           #print axioms Pnp.AC0.Smolensky.smolensky
           #print axioms Pnp.AC0.Smolensky.smolensky_choose
           #print axioms Pnp.AC0.Smolensky.smolensky_tail
+          #print axioms Pnp.AC0.choose_half_sq_mul_le
+          #print axioms Pnp.AC0.parity_ac0_lower_bound
+          #print axioms Pnp.AC0.parity_ac0_lower_bound_of_depth_le
+          #print axioms Pnp.AC0.parity_not_in_AC0
+          #print axioms Pnp.AC0.exists_parity_formula
           LEAN
           lake env lean /tmp/Axioms.lean | tee /tmp/axioms.txt
           if grep -v -E 'propext|Classical.choice|Quot.sound' /tmp/axioms.txt | grep -q 'depends on axioms'; then exit 1; fi

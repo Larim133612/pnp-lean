@@ -22,6 +22,7 @@ no `sorry` and depends only on Lean's standard axioms
 | `Pnp/Monotone/LowerBound.lean` | **Explicit superpolynomial bound (M3e):** with `K ℓ = 2ℓ⁶+1`, `M ℓ = 2ℓ⁴·K ℓ + ℓ ≤ 7ℓ¹⁰` and `p = ℓ+1`, every monotone circuit computing CLIQUE(M ℓ, K ℓ) (any off-diagonal labelling) has `≥ 2^ℓ` gates for `ℓ ≥ 2` (`monotone_clique_lower_bound`), i.e. size `2^{Ω(m^{1/10})}` in the number `m` of vertices; such circuits exist (`exists_circuit_clique_MK`); no bound `s ≤ c·m^d` holds for all `ℓ` (`monotone_clique_superpolynomial`). |
 | `Pnp/AC0/Formula.lean`, `Pnp/AC0/Approx.lean` | AC⁰ formulas (literal leaves, unbounded fan-in AND/OR over `Fin t → Formula`; `size` = number of gates, `depth` = gates on longest path). **Razborov–Smolensky approximation (M4a):** for every `ℓ`, a formula `F` agrees with a polynomial over `𝔽₃` of total degree `≤ (2ℓ)^{depth F}` on all 0/1 inputs outside a set `E` with `|E|·2^ℓ ≤ size F·2ⁿ` (`ac0_approx`). Core: a nonzero vector has vanishing subset sum for at most half of all subsets (`card_sum_eq_zero_mul_two_le`), then double counting picks a good OR approximant (`or_step`); no probability. |
 | `Pnp/AC0/Smolensky.lean` | **Smolensky's lemma (M4b):** if `P` over `𝔽₃` has total degree `≤ D`, it agrees with PARITY on at most `#{T ⊆ [n] : |T| ≤ n/2 + D} = ∑_{i ≤ n/2+D} C(n,i)` points of `{0,1}ⁿ` (`smolensky`, `smolensky_choose`); hence `2·|agree| ≤ 2ⁿ + 2(D+1)·C(n,⌊n/2⌋)` (`smolensky_tail`). Proof via `yᵢ = 1 + xᵢ ∈ {±1}`, multilinearisation (`yᵢ² = 1`), interpolation, and `3^|G| ≤ 3^#{small sets}`. |
+| `Pnp/AC0/Parity.lean` | **PARITY ∉ AC⁰ (M4c).** Central binomial bound `C(n,⌊n/2⌋)²·(n+1) ≤ 4ⁿ` (`choose_half_sq_mul_le`). A formula `F` computing PARITY on `n` bits has `2^ℓ ≤ 4·size F` whenever `16·((2ℓ)^{depth F}+1)² ≤ n+1` (`parity_ac0_lower_bound`; depth-`≤ d` form `parity_ac0_lower_bound_of_depth_le`), i.e. size `2^{Ω(n^{1/(2d)})}`. For fixed `d, c, k`, for all large `n` every depth-`≤ d` formula for PARITY has `> c·n^k` gates (`parity_not_in_AC0`). Non-vacuity: a depth-`≤ 2` DNF computes PARITY for every `n` (`exists_parity_formula`). |
 | `Pnp/Upstream/*.lean` | P vs NP problem statement from [lean-dojo/LeanMillenniumPrizeProblems](https://github.com/lean-dojo/LeanMillenniumPrizeProblems) (Apache-2.0), imports adapted. Target: `Millennium.ClayPVersusNP.Formulations.NegativeBranch`. |
 
 ## Roadmap
@@ -34,9 +35,10 @@ no `sorry` and depends only on Lean's standard axioms
   - [x] M3c Plucking and per-gate error bounds for Alon–Boppana approximators
   - [x] M3d Size inequality for monotone circuits computing CLIQUE
   - [x] M3e Explicit parameters: size `≥ 2^ℓ` for CLIQUE(`~4ℓ¹⁰`, `2ℓ⁶+1`), i.e. `2^{Ω(m^{1/10})}`; non-vacuity
-- [ ] M4 PARITY ∉ AC⁰
+- [x] M4 PARITY ∉ AC⁰
   - [x] M4a AC⁰ formulas are approximated by low-degree `𝔽₃` polynomials
   - [x] M4b Smolensky: degree-`D` `𝔽₃` polynomials agree with PARITY on `≤ ∑_{i ≤ n/2+D} C(n,i)` points
+  - [x] M4c PARITY needs size `2^{Ω(n^{1/(2d)})}` at depth `d`; superpolynomial for every fixed depth
 
 Known barriers (relativization, natural proofs, algebrization) mean none of these
 techniques can by themselves separate P from NP.
