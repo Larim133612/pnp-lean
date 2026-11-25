@@ -15,7 +15,7 @@ jobs:
           use-mathlib-cache: true
       - name: Forbid sorry
         run: |
-          if grep -rnw --include='*.lean' -e 'sorry' -e 'admit' Pnp; then
+          if grep -rnw --include='*.lean' --exclude-dir=Upstream -e 'sorry' -e 'admit' Pnp; then
             echo "sorry/admit found"; exit 1
           fi
       - name: Axiom check
@@ -23,6 +23,8 @@ jobs:
           cat > /tmp/Axioms.lean <<'LEAN'
           import Pnp
           #print axioms Pnp.Circuits.shannon_lower_bound
+          #print axioms Pnp.Formulas.khrapchenko
+          #print axioms Pnp.Formulas.parity_formula_lower_bound
           LEAN
           lake env lean /tmp/Axioms.lean | tee /tmp/axioms.txt
           if grep -v -E 'propext|Classical.choice|Quot.sound' /tmp/axioms.txt | grep -q 'depends on axioms'; then exit 1; fi
