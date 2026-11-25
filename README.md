@@ -21,6 +21,7 @@ no `sorry` and depends only on Lean's standard axioms
 | `Pnp/Monotone/Construct.lean` | **Non-vacuity:** monotone formulas compile to monotone circuits (`MForm.exists_circuit`); for `2 ≤ k ≤ m` the DNF `⋁_{|K|=k} ⋀_{u<v∈K} x_{uv}` gives a monotone circuit computing CLIQUE(m,k) via the standard labelling (`exists_computesClique`, `exists_offDiag_computesClique`). (For `k ≤ 1` or `k > m` CLIQUE is constant and no constant-free monotone circuit computes it.) |
 | `Pnp/Monotone/LowerBound.lean` | **Explicit superpolynomial bound (M3e):** with `K ℓ = 2ℓ⁶+1`, `M ℓ = 2ℓ⁴·K ℓ + ℓ ≤ 7ℓ¹⁰` and `p = ℓ+1`, every monotone circuit computing CLIQUE(M ℓ, K ℓ) (any off-diagonal labelling) has `≥ 2^ℓ` gates for `ℓ ≥ 2` (`monotone_clique_lower_bound`), i.e. size `2^{Ω(m^{1/10})}` in the number `m` of vertices; such circuits exist (`exists_circuit_clique_MK`); no bound `s ≤ c·m^d` holds for all `ℓ` (`monotone_clique_superpolynomial`). |
 | `Pnp/AC0/Formula.lean`, `Pnp/AC0/Approx.lean` | AC⁰ formulas (literal leaves, unbounded fan-in AND/OR over `Fin t → Formula`; `size` = number of gates, `depth` = gates on longest path). **Razborov–Smolensky approximation (M4a):** for every `ℓ`, a formula `F` agrees with a polynomial over `𝔽₃` of total degree `≤ (2ℓ)^{depth F}` on all 0/1 inputs outside a set `E` with `|E|·2^ℓ ≤ size F·2ⁿ` (`ac0_approx`). Core: a nonzero vector has vanishing subset sum for at most half of all subsets (`card_sum_eq_zero_mul_two_le`), then double counting picks a good OR approximant (`or_step`); no probability. |
+| `Pnp/AC0/Smolensky.lean` | **Smolensky's lemma (M4b):** if `P` over `𝔽₃` has total degree `≤ D`, it agrees with PARITY on at most `#{T ⊆ [n] : |T| ≤ n/2 + D} = ∑_{i ≤ n/2+D} C(n,i)` points of `{0,1}ⁿ` (`smolensky`, `smolensky_choose`); hence `2·|agree| ≤ 2ⁿ + 2(D+1)·C(n,⌊n/2⌋)` (`smolensky_tail`). Proof via `yᵢ = 1 + xᵢ ∈ {±1}`, multilinearisation (`yᵢ² = 1`), interpolation, and `3^|G| ≤ 3^#{small sets}`. |
 | `Pnp/Upstream/*.lean` | P vs NP problem statement from [lean-dojo/LeanMillenniumPrizeProblems](https://github.com/lean-dojo/LeanMillenniumPrizeProblems) (Apache-2.0), imports adapted. Target: `Millennium.ClayPVersusNP.Formulations.NegativeBranch`. |
 
 ## Roadmap
@@ -35,6 +36,7 @@ no `sorry` and depends only on Lean's standard axioms
   - [x] M3e Explicit parameters: size `≥ 2^ℓ` for CLIQUE(`~4ℓ¹⁰`, `2ℓ⁶+1`), i.e. `2^{Ω(m^{1/10})}`; non-vacuity
 - [ ] M4 PARITY ∉ AC⁰
   - [x] M4a AC⁰ formulas are approximated by low-degree `𝔽₃` polynomials
+  - [x] M4b Smolensky: degree-`D` `𝔽₃` polynomials agree with PARITY on `≤ ∑_{i ≤ n/2+D} C(n,i)` points
 
 Known barriers (relativization, natural proofs, algebrization) mean none of these
 techniques can by themselves separate P from NP.

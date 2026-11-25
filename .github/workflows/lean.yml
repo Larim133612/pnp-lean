@@ -46,6 +46,9 @@ jobs:
           #print axioms Pnp.AC0.card_sum_eq_zero_mul_two_le
           #print axioms Pnp.AC0.or_step
           #print axioms Pnp.AC0.ac0_approx
+          #print axioms Pnp.AC0.Smolensky.smolensky
+          #print axioms Pnp.AC0.Smolensky.smolensky_choose
+          #print axioms Pnp.AC0.Smolensky.smolensky_tail
           LEAN
           lake env lean /tmp/Axioms.lean | tee /tmp/axioms.txt
           if grep -v -E 'propext|Classical.choice|Quot.sound' /tmp/axioms.txt | grep -q 'depends on axioms'; then exit 1; fi
