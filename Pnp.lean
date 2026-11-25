@@ -7,3 +7,5 @@ import Pnp.Monotone.Circuit
 import Pnp.Monotone.Clique
 import Pnp.Monotone.Pluck
 import Pnp.Monotone.Razborov
+import Pnp.Monotone.Construct
+import Pnp.Monotone.LowerBound
