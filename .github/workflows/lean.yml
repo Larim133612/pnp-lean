@@ -26,6 +26,10 @@ jobs:
           #print axioms Pnp.Formulas.khrapchenko
           #print axioms Pnp.Formulas.parity_formula_lower_bound
           #print axioms Pnp.Monotone.erdos_rado
+          #print axioms Pnp.Monotone.MCircuit.eval_monotone
+          #print axioms Pnp.Monotone.approximation_method
+          #print axioms Pnp.Monotone.clique_approximation
+          #print axioms Pnp.Monotone.not_hasClique_colorGraph
           LEAN
           lake env lean /tmp/Axioms.lean | tee /tmp/axioms.txt
           if grep -v -E 'propext|Classical.choice|Quot.sound' /tmp/axioms.txt | grep -q 'depends on axioms'; then exit 1; fi
