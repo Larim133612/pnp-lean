@@ -5,3 +5,5 @@ import Pnp.Formulas.Khrapchenko
 import Pnp.Monotone.Sunflower
 import Pnp.Monotone.Circuit
 import Pnp.Monotone.Clique
+import Pnp.Monotone.Pluck
+import Pnp.Monotone.Razborov

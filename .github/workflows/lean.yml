@@ -30,6 +30,13 @@ jobs:
           #print axioms Pnp.Monotone.approximation_method
           #print axioms Pnp.Monotone.clique_approximation
           #print axioms Pnp.Monotone.not_hasClique_colorGraph
+          #print axioms Pnp.Monotone.card_petal_collisions
+          #print axioms Pnp.Monotone.card_negErr_pluck
+          #print axioms Pnp.Monotone.card_pluck_le
+          #print axioms Pnp.Monotone.abAop_posErr
+          #print axioms Pnp.Monotone.abAop_negErr
+          #print axioms Pnp.Monotone.razborov_alon_boppana_gen
+          #print axioms Pnp.Monotone.razborov_alon_boppana
           LEAN
           lake env lean /tmp/Axioms.lean | tee /tmp/axioms.txt
           if grep -v -E 'propext|Classical.choice|Quot.sound' /tmp/axioms.txt | grep -q 'depends on axioms'; then exit 1; fi
