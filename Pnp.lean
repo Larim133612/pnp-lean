@@ -13,3 +13,4 @@ import Pnp.AC0.Formula
 import Pnp.AC0.Approx
 import Pnp.AC0.Smolensky
 import Pnp.AC0.Parity
+import Pnp.PPoly.TM2Local
