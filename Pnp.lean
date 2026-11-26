@@ -15,3 +15,6 @@ import Pnp.AC0.Approx
 import Pnp.AC0.Smolensky
 import Pnp.AC0.Parity
 import Pnp.PPoly.TM2Local
+import Pnp.PPoly.Encode
+import Pnp.PPoly.Simulate
+import Pnp.PPoly.PPoly
