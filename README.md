@@ -50,8 +50,8 @@ no `sorry` and depends only on Lean's standard axioms
   - [x] M5b locality and finite reachable alphabet of TM2 steps
   - [x] M5c simulation of polynomial-time TM2 machines by polynomial-size circuits
   - [x] M5d non-vacuity: some language is not in P/poly
-- [x] M7 Schnorr: `Th₂` needs `2n − 3` gates in B₂ (gate elimination)
 - [x] M6 PARITY ∉ AC⁰ for circuits (DAGs) via unfolding to formulas of size `≤ s^d`
+- [x] M7 Schnorr: `Th₂` needs `2n − 3` gates in B₂ (gate elimination)
 
 Known barriers (relativization, natural proofs, algebrization) mean none of these
 techniques can by themselves separate P from NP.
