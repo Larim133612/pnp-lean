@@ -51,10 +51,11 @@ theorem mem_P_empty_of_inPolynomialTime {L : Set Str}
   let tm := comp.tm
   let e₀ : tm.Γ tm.k₀ ≃ Bool := comp.inputAlphabet
   let e₁ : tm.Γ tm.k₁ ≃ Bool := comp.outputAlphabet
+  let ly := boolLayout tm e₀
   obtain ⟨c, d, hcd⟩ := eval_le comp.time
-  let a := c * (Dm tm * B tm e₀)
-  let b := Nm tm e₀ + 2
-  refine ⟨prog tm e₀ e₁, a + b + d, fun x => ⟨f x, ?_, (hf x).symm⟩⟩
+  let a := c * (Dm tm * B tm ly)
+  let b := Nm tm ly + 2
+  refine ⟨prog tm ly e₁, a + b + d, fun x => ⟨f x, ?_, (hf x).symm⟩⟩
   -- the official run
   let T := comp.time.eval x.length
   let c₀ : Turing.TM2.Cfg tm.Γ tm.Λ tm.σ := initList tm (x.map e₀.symm)
@@ -63,19 +64,19 @@ theorem mem_P_empty_of_inPolynomialTime {L : Set Str}
   obtain ⟨hT, -⟩ := Pnp.PPoly.outputsInTime_step' tm ho
   have hS := Pnp.PPoly.iterate_step'_stkInA tm (x.map e₀.symm)
   -- the encoding of the initial configuration is the input
-  have hE : Enc tm e₀ c₀.stk (init [x]).stk := by
+  have hE : Enc tm ly c₀.stk (init [x]).stk := by
     intro k
     simp only [c₀]
     rw [Pnp.PPoly.initList_stk]
     by_cases hk : k = tm.k₀
     · subst hk
-      simp only [dite_true, sk_k₀, init]
+      simp only [dite_true, sk_k₀ tm ly, init]
       exact (enc_k₀ tm e₀ x).symm
     · simp only [hk, dite_false, init]
-      have := sk_ne_zero tm hk
+      have := sk_ne_zero tm ly hk
       obtain ⟨j, hj⟩ := Nat.exists_eq_succ_of_ne_zero this
       rw [hj]; rfl
-  obtain ⟨stk₁, t₁, h₁, ht₁, hE₁⟩ := sim_iter tm e₀ e₁ c₀ _ hS hE T
+  obtain ⟨stk₁, t₁, h₁, ht₁, hE₁⟩ := sim_iter tm ly e₁ c₀ _ hS hE T
   rw [hT] at h₁ hE₁
   -- final phase: jump to the output reader, read the output symbol, halt
   have hSf := hS T
@@ -86,29 +87,29 @@ theorem mem_P_empty_of_inPolynomialTime {L : Set Str}
   have hrep : rep tm (haltList tm [g]) = .exec .halt tm.initialState := rfl
   rw [hrep] at h₁
   have h₂ := reach_nop (stk := stk₁)
-    (nop_of tm e₀ e₁ (exec_mem tm e₀ (halt_mem tm) tm.initialState) rfl)
-  have hN := N_le_Nm tm e₀ tm.k₁
-  obtain ⟨t₃, ht₃, h₃⟩ := reach_top tm e₀ e₁ (k := tm.k₁) (z := idx tm e₀ (.fin false))
-    (R := fun c => idx tm e₀ (.out c)) (T := fun i => idx tm e₀ (.fin (ans tm e₀ e₁ i)))
-    (fun c hc => by rw [prog_idx tm e₀ e₁ (out_mem tm e₀ (by omega))]; rfl) hSf hE₁ hStop
-  have hans : ans tm e₀ e₁ (ix tm e₀ tm.k₁ g) = f x := by
-    simp only [ans, sy_ix tm e₀ hg, g, Equiv.apply_symm_apply]
+    (nop_of tm ly e₁ (exec_mem tm ly (halt_mem tm) tm.initialState) rfl)
+  have hN := N_le_Nm tm ly tm.k₁
+  obtain ⟨t₃, ht₃, h₃⟩ := reach_top tm ly e₁ (k := tm.k₁) (z := idx tm ly (.fin false))
+    (R := fun c => idx tm ly (.out c)) (T := fun i => idx tm ly (.fin (ans tm ly e₁ i)))
+    (fun c hc => by rw [prog_idx tm ly e₁ (out_mem tm ly (by omega))]; rfl) hSf hE₁ hStop
+  have hans : ans tm ly e₁ (ix tm ly tm.k₁ g) = f x := by
+    simp only [ans, sy_ix tm ly hg, g, Equiv.apply_symm_apply]
   rw [hans] at h₃
   have hall := (h₁.trans h₂).trans h₃
-  have hfin : runFor ∅ (prog tm e₀ e₁) (t₁ + 1 + t₃ + 1) (.run (init [x])) = .done (f x) := by
-    have e0 : init [x] = ⟨idx tm e₀ (rep tm c₀), (init [x]).stk⟩ := by
+  have hfin : runFor ∅ (prog tm ly e₁) (t₁ + 1 + t₃ + 1) (.run (init [x])) = .done (f x) := by
+    have e0 : init [x] = ⟨idx tm ly (rep tm c₀), (init [x]).stk⟩ := by
       have : rep tm c₀ = .exec (tm.m tm.main) tm.initialState := rfl
       rw [this, idx_init]; rfl
     rw [e0, runFor_add]
     unfold Reach at hall
     rw [hall, runFor_succ_run]
-    simp [step, prog_idx tm e₀ e₁ (fin_mem tm e₀ _), act]
+    simp [step, prog_idx tm ly e₁ (fin_mem tm ly _), act]
   refine runFor_mono hfin ?_
   have hTle : T ≤ c * (x.length + 2) ^ d := hcd _
-  have := Nat.mul_le_mul_right (Dm tm * B tm e₀) hTle
+  have := Nat.mul_le_mul_right (Dm tm * B tm ly) hTle
   have hab := absorb a b d x.length
   simp only [tb]
-  have e : c * (x.length + 2) ^ d * (Dm tm * B tm e₀) = a * (x.length + 2) ^ d := by
+  have e : c * (x.length + 2) ^ d * (Dm tm * B tm ly) = a * (x.length + 2) ^ d := by
     simp only [a]; ring
   omega
 
