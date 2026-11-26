@@ -34,22 +34,21 @@ open Pnp.Relativize MvPolynomial Function Comb
 /-! ### The multilinear extension -/
 
 open Classical in
-/-- The multilinear extension of a Boolean oracle `A`: over `ZMod p` in `m` variables,
+/-- The multilinear extension of a Boolean oracle `A`: over `Fld q` in `m` variables,
 `∑_{z ∈ {0,1}^m, z ∈ A} ∏ᵢ (if zᵢ then Xᵢ else 1 - Xᵢ)`. -/
 noncomputable def mle (A : Oracle) : AlgOracle := fun _ m =>
   ∑ z : Fin m → Bool, if List.ofFn z ∈ A then ∏ i, (if z i then X i else 1 - X i) else 0
 
-theorem degreeOf_mle_le (A : Oracle) {p : ℕ} (hp : p.Prime) (m : ℕ) (i : Fin m) :
-    (mle A p m).degreeOf i ≤ 1 := by
-  haveI : Fact p.Prime := ⟨hp⟩
+theorem degreeOf_mle_le (A : Oracle) (q m : ℕ) (i : Fin m) :
+    (mle A q m).degreeOf i ≤ 1 := by
   classical
   refine (degreeOf_sum_le _ _ _).trans (Finset.sup_le fun z _ => ?_)
   split_ifs
   · refine (degreeOf_prod_le _ _ _).trans ?_
-    calc ∑ j, degreeOf i (if z j then (X j : MvPolynomial (Fin m) (ZMod p)) else 1 - X j)
+    calc ∑ j, degreeOf i (if z j then (X j : MvPolynomial (Fin m) (Fld q)) else 1 - X j)
         ≤ ∑ j : Fin m, if i = j then 1 else 0 := by
           refine Finset.sum_le_sum fun j _ => ?_
-          have hX := degreeOf_X (R := ZMod p) i j
+          have hX := degreeOf_X (R := Fld q) i j
           by_cases hz : z j
           · rw [if_pos hz, hX]
           · rw [if_neg hz]
@@ -57,8 +56,8 @@ theorem degreeOf_mle_le (A : Oracle) {p : ℕ} (hp : p.Prime) (m : ℕ) (i : Fin
       _ = 1 := by simp
   · simp [degreeOf_zero]
 
-theorem eval_mle (A : Oracle) (p m : ℕ) (z : Fin m → Bool) :
-    eval (boolPt z) (mle A p m) = open Classical in if List.ofFn z ∈ A then 1 else 0 := by
+theorem eval_mle (A : Oracle) (q m : ℕ) (z : Fin m → Bool) :
+    eval (boolPt z) (mle A q m) = open Classical in if List.ofFn z ∈ A then 1 else 0 := by
   classical
   simp only [mle, map_sum]
   rw [Finset.sum_eq_single z]
@@ -79,8 +78,8 @@ theorem eval_mle (A : Oracle) (p m : ℕ) (z : Fin m → Bool) :
 
 /-- The multilinear extension is a (multiquadratic) extension. -/
 theorem isExtension_mle (A : Oracle) : IsExtension A (mle A) := by
-  intro p hp m
-  refine ⟨fun i => (degreeOf_mle_le A hp m i).trans (by norm_num), fun z => ?_⟩
+  intro q m
+  refine ⟨fun i => (degreeOf_mle_le A q m i).trans (by norm_num), fun z => ?_⟩
   rw [eval_mle]
 
 /-! ### Locality -/
@@ -102,12 +101,12 @@ theorem toOracle_mle_congr_short {N : ℕ} {O₁ O₂ : Oracle}
     rintro p j xs rfl
     exact mle_congr (fun t ht => hO t (by have := length_lt_length_encQ p j xs; omega)) p
   constructor
-  · rintro ⟨p, j, xs, hp, hxs, hs', ha⟩
-    refine ⟨p, j, xs, hp, hxs, hs', ?_⟩
+  · rintro ⟨p, j, xs, hxs, hs', ha⟩
+    refine ⟨p, j, xs, hxs, hs', ?_⟩
     unfold answer at *
     rwa [← key p j xs hs']
-  · rintro ⟨p, j, xs, hp, hxs, hs', ha⟩
-    refine ⟨p, j, xs, hp, hxs, hs', ?_⟩
+  · rintro ⟨p, j, xs, hxs, hs', ha⟩
+    refine ⟨p, j, xs, hxs, hs', ?_⟩
     unfold answer at *
     rwa [key p j xs hs']
 

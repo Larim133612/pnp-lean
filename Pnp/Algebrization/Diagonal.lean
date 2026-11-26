@@ -15,12 +15,12 @@ The diagonalization mirrors `Pnp.Relativize.BGS`.  Stage `i` handles machine
 * pick a length `n ≥ bound` with `tb k n < 2^n` and run `prog` on `0^n` for `tb k n` steps
   with the current algebraic oracle (as a Boolean oracle, `toOracle`);
 * the run makes fewer than `2^n` queries; each well-formed query `encQ p j xs` names
-  (by injectivity of `encQ`) a single point of a single field `ZMod p`.  For each prime
-  `p`, the multiquadratic interpolation lemma `exists_vanishing_indicator`
+  (by injectivity of `encQ`) a single point of a single field `Fld q`.  For each field
+  `Fld q`, the multiquadratic interpolation lemma `exists_vanishing_indicator`
   (A–W Lemma 4.2 style: a multiquadratic polynomial vanishing on `t` prescribed points
   that is the indicator of `z` on `{0,1}^n` exists for all but `t` Boolean `z`) excludes at
-  most `|Y_p|` Boolean points, where `Y_p` is the set of queried points over `ZMod p`;
-  a union bound gives a string `w ∈ {0,1}^n` that is not excluded for any prime;
+  most `|Y_p|` Boolean points, where `Y_p` is the set of queried points over `Fld q`;
+  a union bound gives a string `w ∈ {0,1}^n` that is not excluded for any field;
 * if the machine accepts, nothing changes; otherwise `w` is added to `A`, and at arity
   `n` every `Ã_{p,n}` becomes the vanishing indicator of `w` — which is `0` on every
   point the machine queried, exactly as before the stage;
@@ -150,15 +150,15 @@ theorem card_D_le (qs : List Str) : (D qs).card ≤ qs.length :=
   (Finset.card_le_card_of_injOn enc3 (fun t ht => by simpa [mem_D] using ht)
     enc3_injective.injOn).trans (List.toFinset_card_le qs)
 
-/-- A list of naturals as a point of `(ZMod p)^m` (no length bookkeeping). -/
-def ptm (p m : ℕ) (xs : List ℕ) : Fin m → ZMod p := fun k => ((xs.getD k 0 : ℕ) : ZMod p)
+/-- A list of naturals as a point of `(Fld p)^m` (no length bookkeeping). -/
+noncomputable def ptm (p m : ℕ) (xs : List ℕ) : Fin m → Fld p := fun k => felt p (xs.getD k 0)
 
 theorem pt_eq_ptm (p : ℕ) (xs : List ℕ) : pt p xs = ptm p xs.length xs := by
   funext k
   simp [pt, ptm, List.getD_eq_getElem?_getD]
 
-/-- The points of `(ZMod p)^m` queried in `qs`. -/
-noncomputable def Y (qs : List Str) (p m : ℕ) : Finset (Fin m → ZMod p) :=
+/-- The points of `(Fld p)^m` queried in `qs`. -/
+noncomputable def Y (qs : List Str) (p m : ℕ) : Finset (Fin m → Fld p) :=
   (((D qs).filter fun t => t.1 = p).filter fun t => t.2.2.length = m).image
     fun t => ptm p m t.2.2
 
@@ -174,56 +174,46 @@ theorem ptm_mem_Y {qs : List Str} {p j : ℕ} {xs : List ℕ} (h : encQ p j xs �
 
 /-! ### Vanishing indicator polynomials -/
 
-/-- `exists_vanishing_indicator` for the prime field `ZMod p` and the queried points. -/
-theorem exists_vi (qs : List Str) (p m : ℕ) (hp : p.Prime) :
+/-- `exists_vanishing_indicator` for the finite field `Fld p` and the queried points. -/
+theorem exists_vi (qs : List Str) (p m : ℕ) :
     ∃ Bad : Finset (Fin m → Bool), Bad.card ≤ (Y qs p m).card ∧ ∀ z ∉ Bad,
-      ∃ q : MvPolynomial (Fin m) (ZMod p), (∀ i, q.degreeOf i ≤ 2) ∧
+      ∃ q : MvPolynomial (Fin m) (Fld p), (∀ i, q.degreeOf i ≤ 2) ∧
         (∀ y ∈ Y qs p m, eval y q = 0) ∧
-        ∀ z' : Fin m → Bool, eval (boolPt z') q = if z' = z then 1 else 0 := by
-  haveI : Fact p.Prime := ⟨hp⟩
-  exact exists_vanishing_indicator m (Y qs p m)
+        ∀ z' : Fin m → Bool, eval (boolPt z') q = if z' = z then 1 else 0 :=
+  exists_vanishing_indicator m (Y qs p m)
 
-/-- The exceptional Boolean points for prime `p` and arity `m`. -/
+/-- The exceptional Boolean points for the field `Fld p` and arity `m`. -/
 noncomputable def badSet (qs : List Str) (p m : ℕ) : Finset (Fin m → Bool) :=
-  if hp : p.Prime then Classical.choose (exists_vi qs p m hp) else ∅
+  Classical.choose (exists_vi qs p m)
 
 open Classical in
 /-- A multiquadratic polynomial vanishing on the queried points and equal to the indicator
-of `z` on the cube (or `0` if `z` is exceptional or `p` is not prime). -/
+of `z` on the cube (or `0` if `z` is exceptional). -/
 noncomputable def poly (qs : List Str) (p m : ℕ) (z : Fin m → Bool) :
-    MvPolynomial (Fin m) (ZMod p) :=
-  if hp : p.Prime then
-    if hz : z ∉ Classical.choose (exists_vi qs p m hp) then
-      Classical.choose ((Classical.choose_spec (exists_vi qs p m hp)).2 z hz)
-    else 0
+    MvPolynomial (Fin m) (Fld p) :=
+  if hz : z ∉ Classical.choose (exists_vi qs p m) then
+    Classical.choose ((Classical.choose_spec (exists_vi qs p m)).2 z hz)
   else 0
 
-theorem card_badSet_le (qs : List Str) (p m : ℕ) : (badSet qs p m).card ≤ (Y qs p m).card := by
-  unfold badSet
-  split_ifs with hp
-  · exact (Classical.choose_spec (exists_vi qs p m hp)).1
-  · simp
+theorem card_badSet_le (qs : List Str) (p m : ℕ) : (badSet qs p m).card ≤ (Y qs p m).card :=
+  (Classical.choose_spec (exists_vi qs p m)).1
 
 theorem poly_degreeOf (qs : List Str) (p m : ℕ) (z : Fin m → Bool) (k : Fin m) :
     (poly qs p m z).degreeOf k ≤ 2 := by
   unfold poly
-  by_cases hp : p.Prime
-  · rw [dif_pos hp]
-    by_cases hz : z ∉ Classical.choose (exists_vi qs p m hp)
-    · rw [dif_pos hz]
-      exact (Classical.choose_spec ((Classical.choose_spec (exists_vi qs p m hp)).2 z hz)).1 k
-    · rw [dif_neg hz, degreeOf_zero]; omega
-  · rw [dif_neg hp, degreeOf_zero]; omega
+  by_cases hz : z ∉ Classical.choose (exists_vi qs p m)
+  · rw [dif_pos hz]
+    exact (Classical.choose_spec ((Classical.choose_spec (exists_vi qs p m)).2 z hz)).1 k
+  · rw [dif_neg hz, degreeOf_zero]; omega
 
-theorem poly_spec {qs : List Str} {p m : ℕ} {z : Fin m → Bool} (hp : p.Prime)
+theorem poly_spec {qs : List Str} {p m : ℕ} {z : Fin m → Bool}
     (hz : z ∉ badSet qs p m) :
     (∀ y ∈ Y qs p m, eval y (poly qs p m z) = 0) ∧
       ∀ z' : Fin m → Bool, eval (boolPt z') (poly qs p m z) = if z' = z then 1 else 0 := by
   unfold badSet at hz
-  rw [dif_pos hp] at hz
   unfold poly
-  rw [dif_pos hp, dif_pos hz]
-  exact (Classical.choose_spec ((Classical.choose_spec (exists_vi qs p m hp)).2 z hz)).2
+  rw [dif_pos hz]
+  exact (Classical.choose_spec ((Classical.choose_spec (exists_vi qs p m)).2 z hz)).2
 
 /-- A string read as a Boolean point of arity `m`. -/
 def zf (w : Str) (m : ℕ) : Fin m → Bool := fun k => w.getD k false
@@ -324,7 +314,7 @@ open Classical in
 /-- The polynomials installed at the stage's arity: `0` if the machine accepts, else the
 vanishing indicator of `good s pk`. -/
 noncomputable def newPoly (s : Stage) (pk : Prog × ℕ) (p m : ℕ) :
-    MvPolynomial (Fin m) (ZMod p) :=
+    MvPolynomial (Fin m) (Fld p) :=
   if res s pk = .done true then 0 else poly (qs s pk) p m (zf (good s pk) m)
 
 open Classical in
@@ -345,7 +335,7 @@ noncomputable def stage : ℕ → Stage
 /-- Abbreviations for stage `i`. -/
 noncomputable def A (i : ℕ) : Set Str := add (stage i) (enum i)
 noncomputable def n (i : ℕ) : ℕ := len (stage i) (enum i)
-noncomputable def G (i p : ℕ) : MvPolynomial (Fin (n i)) (ZMod p) :=
+noncomputable def G (i p : ℕ) : MvPolynomial (Fin (n i)) (Fld p) :=
   newPoly (stage i) (enum i) p (n i)
 
 /-- The final Boolean oracle. -/
@@ -426,7 +416,7 @@ theorem algOracle_zero {m : ℕ} (h : ∀ j, n j ≠ m) (p : ℕ) : algOracle p 
   stage_alg_zero (fun j _ => h j) p
 
 /-- At every point queried at stage `i`, the stage's polynomial and the final one agree. -/
-theorem agree_eval (i : ℕ) {p j : ℕ} {xs : List ℕ} (hp : p.Prime)
+theorem agree_eval (i : ℕ) {p j : ℕ} {xs : List ℕ}
     (hq : encQ p j xs ∈ qs (stage i) (enum i)) :
     eval (ptm p xs.length xs) ((stage i).alg p xs.length) =
       eval (ptm p xs.length xs) (algOracle p xs.length) := by
@@ -442,7 +432,7 @@ theorem agree_eval (i : ℕ) {p j : ℕ} {xs : List ℕ} (hp : p.Prime)
       unfold G newPoly
       split_ifs
       · rw [map_zero]
-      · exact ((poly_spec hp (good_not_bad _ _ p)).1 _ hY).symm
+      · exact ((poly_spec (good_not_bad _ _ p)).1 _ hY).symm
     · exfalso
       have h2 := bound_mono (show i + 1 ≤ j' by omega)
       have h3 := bound_le_n j'
@@ -456,14 +446,14 @@ theorem agree (i : ℕ) (q : Str) (hq : q ∈ qs (stage i) (enum i)) :
   unfold toOracle answer
   simp only [Set.mem_setOf_eq]
   constructor
-  · rintro ⟨p, j, xs, hp, hxs, rfl, ha⟩
-    refine ⟨p, j, xs, hp, hxs, rfl, ?_⟩
+  · rintro ⟨p, j, xs, hxs, rfl, ha⟩
+    refine ⟨p, j, xs, hxs, rfl, ?_⟩
     rw [pt_eq_ptm] at ha ⊢
-    rwa [← agree_eval i hp hq]
-  · rintro ⟨p, j, xs, hp, hxs, rfl, ha⟩
-    refine ⟨p, j, xs, hp, hxs, rfl, ?_⟩
+    rwa [← agree_eval i hq]
+  · rintro ⟨p, j, xs, hxs, rfl, ha⟩
+    refine ⟨p, j, xs, hxs, rfl, ?_⟩
     rw [pt_eq_ptm] at ha ⊢
-    rwa [agree_eval i hp hq]
+    rwa [agree_eval i hq]
 
 theorem run_oracle (i : ℕ) :
     runFor (toOracle algOracle) (enum i).1 (tb (enum i).2 (n i)) (start (stage i) (enum i)) =
@@ -500,7 +490,7 @@ theorem LB_oracle_not_mem_PA : LB oracle ∉ PA algOracle := by
 
 /-- The final algebraic oracle is a multiquadratic extension of the final oracle. -/
 theorem isExtension : IsExtension oracle algOracle := by
-  intro p hp m
+  intro p m
   by_cases hex : ∃ j, n j = m
   · obtain ⟨j, rfl⟩ := hex
     rw [algOracle_n]
@@ -529,7 +519,7 @@ theorem isExtension : IsExtension oracle algOracle := by
         rw [hmem]
         exact fun h => h.1 hr
       · rw [if_neg hr]
-        refine ((poly_spec hp (good_not_bad _ _ p)).2 z).trans ?_
+        refine ((poly_spec (good_not_bad _ _ p)).2 z).trans ?_
         simp only [hmem, ne_eq, hr, not_false_eq_true, true_and]
         rfl
   · push Not at hex
