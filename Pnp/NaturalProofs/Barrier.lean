@@ -141,9 +141,11 @@ structure PRFamily where
 
 attribute [instance] PRFamily.fintype PRFamily.nonempty
 
-/-- Every member `F n k` has a circuit of size polynomial in `n`. -/
+/-- Every member `F n k` (`n ≥ 1`) has a circuit of size polynomial in `n`. (Input length
+`0` is excluded: in this circuit model a circuit has at least one wire, so functions of `0`
+variables have no circuits at all.) -/
 def PRFamily.InPPoly (G : PRFamily) : Prop :=
-  ∃ p : Polynomial ℕ, ∀ n k, HasCircuitOfSize (G.F n k) (p.eval n)
+  ∃ p : Polynomial ℕ, ∀ n, 0 < n → ∀ k, HasCircuitOfSize (G.F n k) (p.eval n)
 
 /-- Security against truth-table distinguishers of size polynomial in `2ⁿ`: for all polynomials
 `q`, `r` and all large `n`, every distinguisher with `q(2ⁿ)` gates has advantage `< 1 / r(2ⁿ)`. -/
@@ -159,7 +161,7 @@ theorem natural_proofs_barrier {Γ : ∀ n, Set (BoolFun n)} (hΓ : NaturalAgain
   obtain ⟨p, hp⟩ := hG
   intro hsec
   obtain ⟨N, hN⟩ := hsec q r
-  obtain ⟨n, hn, hun⟩ := hu p N
+  obtain ⟨n, hn, hun⟩ := hu p (N + 1)
   obtain ⟨T, hT, hTΓ⟩ := hq n
   have hpos : (0 : ℝ) < 2 ^ 2 ^ n := by positivity
   have hδ : (1 : ℝ) / r.eval (2 ^ n) ≤ prob (· ∈ Γ n) := by
@@ -171,8 +173,8 @@ theorem natural_proofs_barrier {Γ : ∀ n, Set (BoolFun n)} (hΓ : NaturalAgain
       push_cast
       exact_mod_cast (by simpa [mul_comm] using this)
   obtain ⟨T', hT', hadv⟩ :=
-    natural_breaks_prf hT hTΓ hδ hun (G.F n) (fun k => hp n k)
-  have hlt := hN n hn T' hT'
+    natural_breaks_prf hT hTΓ hδ hun (G.F n) (fun k => hp n (by omega) k)
+  have hlt := hN n (by omega) T' hT'
   rcases Nat.eq_zero_or_pos (r.eval (2 ^ n)) with h0 | h0
   · -- `r(2ⁿ) = 0` contradicts largeness: `2^(2ⁿ) ≤ 0`.
     have := hr n

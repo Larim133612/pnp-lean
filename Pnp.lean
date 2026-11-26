@@ -45,3 +45,4 @@ import Pnp.Oracle.OfficialP
 import Pnp.Oracle.Shift
 import Pnp.Oracle.FromNP
 import Pnp.Oracle.NPEquiv
+import Pnp.NaturalProofs.GGM
