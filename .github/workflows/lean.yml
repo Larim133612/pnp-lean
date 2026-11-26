@@ -69,6 +69,9 @@ jobs:
           #print axioms Pnp.AC0.parity_not_in_AC0_circuits
           #print axioms Pnp.AC0.exists_parity_circuit
           #print axioms Pnp.Circuits.th2_lower_bound
+          #print axioms Pnp.Circuits.q23_lower_bound
+          #print axioms Pnp.Circuits.mod3_lower_bound
+          #print axioms Pnp.Circuits.th2_lower_bound'
           #print axioms Pnp.Circuits.not_hasCircuitOfSize_th2
           #print axioms Pnp.Circuits.le_size_of_depends
           #print axioms Pnp.Circuits.th2_hasCircuitOfSize

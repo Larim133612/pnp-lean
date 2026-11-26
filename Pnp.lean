@@ -21,6 +21,7 @@ import Pnp.PPoly.PPoly
 import Pnp.PPoly.NonVacuity
 import Pnp.AC0.Circuit
 import Pnp.Circuits.GateElim
+import Pnp.Circuits.Schnorr
 import Pnp.Oracle.Machine
 import Pnp.Oracle.Locality
 import Pnp.Oracle.PSubsetNP
