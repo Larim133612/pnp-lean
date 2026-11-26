@@ -25,3 +25,6 @@ import Pnp.Oracle.Machine
 import Pnp.Oracle.Locality
 import Pnp.Oracle.PSubsetNP
 import Pnp.Oracle.BGS
+import Pnp.Oracle.Combinators
+import Pnp.Oracle.BGSA
+import Pnp.Oracle.Relativization
