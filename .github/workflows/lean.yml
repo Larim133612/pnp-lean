@@ -64,6 +64,10 @@ jobs:
           #print axioms Pnp.PPoly.negativeBranch_of_not_inPPoly
           #print axioms Pnp.PPoly.exists_not_inPPoly
           #print axioms Pnp.PPoly.inPPoly_true
+          #print axioms Pnp.AC0.Circuit.exists_formula
+          #print axioms Pnp.AC0.parity_ac0_circuit_lower_bound
+          #print axioms Pnp.AC0.parity_not_in_AC0_circuits
+          #print axioms Pnp.AC0.exists_parity_circuit
           LEAN
           lake env lean /tmp/Axioms.lean | tee /tmp/axioms.txt
           if grep -v -E 'propext|Classical.choice|Quot.sound' /tmp/axioms.txt | grep -q 'depends on axioms'; then exit 1; fi

@@ -19,3 +19,4 @@ import Pnp.PPoly.Encode
 import Pnp.PPoly.Simulate
 import Pnp.PPoly.PPoly
 import Pnp.PPoly.NonVacuity
+import Pnp.AC0.Circuit
