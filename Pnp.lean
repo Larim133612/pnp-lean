@@ -29,6 +29,8 @@ import Pnp.Oracle.Combinators
 import Pnp.Oracle.BGSA
 import Pnp.Oracle.Relativization
 import Pnp.Oracle.Official
+import Pnp.Oracle.Truncate
+import Pnp.Oracle.OfficialNP
 import Pnp.NaturalProofs.Barrier
 import Pnp.NaturalProofs.NonVacuity
 import Pnp.Algebrization.Extension
