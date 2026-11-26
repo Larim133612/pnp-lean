@@ -104,6 +104,8 @@ jobs:
           #print axioms Pnp.Algebrize.aaronson_wigderson
           #print axioms Pnp.Algebrize.algebrization_barrier
           #print axioms Pnp.Relativize.Official.inPolynomialTime_of_mem_P_empty
+          #print axioms Pnp.Relativize.runFor_take
+          #print axioms Pnp.Relativize.OfficialNP.inNP_of_mem_NP_empty
           LEAN
           lake env lean /tmp/Axioms.lean | tee /tmp/axioms.txt
           if grep -v -E 'propext|Classical.choice|Quot.sound' /tmp/axioms.txt | grep -q 'depends on axioms'; then exit 1; fi
