@@ -112,6 +112,12 @@ jobs:
           #print axioms Pnp.Relativize.OfficialP.mem_P_empty_of_inPolynomialTime
           #print axioms Pnp.Relativize.OfficialP.mem_P_empty_iff
           #print axioms Pnp.Relativize.OfficialP.negativeBranch_of_NP_not_subset_P
+          #print axioms Pnp.Relativize.Reach.embed
+          #print axioms Pnp.Relativize.FromNP.decode
+          #print axioms Pnp.Relativize.FromNP.outcome
+          #print axioms Pnp.Relativize.NPEquiv.mem_NP_empty_of_inNP
+          #print axioms Pnp.Relativize.NPEquiv.mem_NP_empty_iff
+          #print axioms Pnp.Relativize.NPEquiv.official_P_eq_NP_bool_iff
           LEAN
           lake env lean /tmp/Axioms.lean | tee /tmp/axioms.txt
           if grep -v -E 'propext|Classical.choice|Quot.sound' /tmp/axioms.txt | grep -q 'depends on axioms'; then exit 1; fi
