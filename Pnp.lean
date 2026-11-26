@@ -30,3 +30,8 @@ import Pnp.Oracle.BGSA
 import Pnp.Oracle.Relativization
 import Pnp.NaturalProofs.Barrier
 import Pnp.NaturalProofs.NonVacuity
+import Pnp.Algebrization.Extension
+import Pnp.Algebrization.Interpolation
+import Pnp.Algebrization.Collapse
+import Pnp.Algebrization.Diagonal
+import Pnp.Algebrization.Barrier
