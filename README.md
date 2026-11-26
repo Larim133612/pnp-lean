@@ -34,6 +34,8 @@ no `sorry` and depends only on Lean's standard axioms
 | `Pnp/Oracle/BGS.lean` | **Baker–Gill–Solovay, oracle B:** `L_B = {x : ∃ w ∈ B, |w| = |x|}` is in `NP^B` for every `B` (`LB_mem_NP`, explicit 6-instruction verifier), and by diagonalisation over all (program, exponent) pairs some `B` has `L_B ∉ P^B` (`LB_not_mem_P`); hence `P^B ⊊ NP^B` (`exists_oracle_P_ssubset_NP`). |
 | `Pnp/Oracle/Combinators.lean`, `Pnp/Oracle/BGSA.lean` | **Baker–Gill–Solovay, oracle A:** a self-referential oracle defined by well-founded recursion on string length, `code(i,x,T) ∈ A` iff verifier `i` accepts `x` with oracle `A` (padding `T` makes all its queries shorter than the code). An explicit deterministic machine writes `code(i, x, (|x|+2)^{k+1})` (nested counting loops) and queries it in time `(n+2)^{3(k+1)+i+11}` (`queryProg_run`, `queryTime_le`), so `NP^A ⊆ P^A` (`exists_oracle_NP_subset_P`). |
 | `Pnp/Oracle/Relativization.lean` | **Relativization barrier:** `∃ A, P^A = NP^A` and `∃ B, P^B ⊊ NP^B` (`baker_gill_solovay`); hence neither `P^O = NP^O` nor `P^O ≠ NP^O` holds for all oracles (`relativization_barrier`). Caveat: this is a theorem about our oracle model; the model is not formally proved equivalent to the upstream (unrelativized) TM2 classes, and "a proof technique relativizes" is a meta-level notion that is not itself formalized. |
+| `Pnp/NaturalProofs/Barrier.lean` | **Natural proofs barrier (Razborov–Rudich):** properties `Γ n` of `n`-variable Boolean functions that are *constructive* (decided from the `2ⁿ`-bit truth table by circuits of size `poly(2ⁿ)`), *large* (density `≥ 1/poly(2ⁿ)`) and *useful against P/poly* (for every polynomial `p`, infinitely often no member has a `p(n)`-gate circuit). A constructive, large, useful property breaks every pseudorandom function family in P/poly (`natural_proofs_barrier`); contrapositive `no_natural_property_of_secure_prf`; explicit one-length version `natural_breaks_prf` (the deciding circuit itself is a distinguisher with advantage `≥` the density). Security is the Razborov–Rudich notion: distinguishers of size `poly(2ⁿ)` reading the whole truth table have advantage `< 1/poly(2ⁿ)`. Caveats: the existence of secure PRFs is an explicit hypothesis (believed, unproven); "a proof naturalizes" is a meta-level notion that is not formalized. |
+| `Pnp/NaturalProofs/NonVacuity.lean` | Sanity checks: "all functions" is constructive and large; Shannon's property "no circuit with `2ⁿ/(10n)` gates" is large (density `≥ 1/2`) and useful against P/poly (`shannon_large_useful`). So the barrier is really about constructivity. |
 | `Pnp/Upstream/*.lean` | P vs NP problem statement from [lean-dojo/LeanMillenniumPrizeProblems](https://github.com/lean-dojo/LeanMillenniumPrizeProblems) (Apache-2.0), imports adapted. Target: `Millennium.ClayPVersusNP.Formulations.NegativeBranch`. |
 
 ## Roadmap
@@ -60,9 +62,10 @@ no `sorry` and depends only on Lean's standard axioms
 - [x] M8 Relativization barrier (Baker–Gill–Solovay) in an oracle stack-machine model
   - [x] M8a oracle `B` with `P^B ⊊ NP^B` (diagonalisation)
   - [x] M8b oracle `A` with `P^A = NP^A` (self-referential padded oracle)
+- [x] M9 Natural proofs barrier (Razborov–Rudich), with PRF security as an explicit hypothesis
 
 Known barriers (relativization, natural proofs, algebrization) mean none of these
-techniques can by themselves separate P from NP. M8 formalizes the first of them.
+techniques can by themselves separate P from NP. M8 formalizes the first of them and M9 the second.
 
 ## Build
 
