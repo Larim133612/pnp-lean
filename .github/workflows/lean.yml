@@ -92,6 +92,13 @@ jobs:
           #print axioms Pnp.NaturalProofs.natural_breaks_prf
           #print axioms Pnp.NaturalProofs.natural_proofs_barrier
           #print axioms Pnp.NaturalProofs.no_natural_property_of_secure_prf
+          #print axioms Pnp.NaturalProofs.hybrid
+          #print axioms Pnp.NaturalProofs.ggm_reduction
+          #print axioms Pnp.NaturalProofs.hasCircuit_ggm
+          #print axioms Pnp.NaturalProofs.PRG.ggmFamily_inPPoly
+          #print axioms Pnp.NaturalProofs.PRG.ggmFamily_secure
+          #print axioms Pnp.NaturalProofs.no_natural_property_of_secure_prg
+          #print axioms Pnp.NaturalProofs.ggmFamily_id_inPPoly
           #print axioms Pnp.NaturalProofs.constructive_univ
           #print axioms Pnp.NaturalProofs.large_univ
           #print axioms Pnp.NaturalProofs.shannon_large
