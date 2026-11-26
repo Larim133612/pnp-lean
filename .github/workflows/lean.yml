@@ -86,6 +86,14 @@ jobs:
           #print axioms Pnp.Relativize.exists_oracle_P_eq_NP
           #print axioms Pnp.Relativize.baker_gill_solovay
           #print axioms Pnp.Relativize.relativization_barrier
+          #print axioms Pnp.NaturalProofs.natural_breaks_prf
+          #print axioms Pnp.NaturalProofs.natural_proofs_barrier
+          #print axioms Pnp.NaturalProofs.no_natural_property_of_secure_prf
+          #print axioms Pnp.NaturalProofs.constructive_univ
+          #print axioms Pnp.NaturalProofs.large_univ
+          #print axioms Pnp.NaturalProofs.shannon_large
+          #print axioms Pnp.NaturalProofs.shannon_useful
+          #print axioms Pnp.NaturalProofs.shannon_large_useful
           LEAN
           lake env lean /tmp/Axioms.lean | tee /tmp/axioms.txt
           if grep -v -E 'propext|Classical.choice|Quot.sound' /tmp/axioms.txt | grep -q 'depends on axioms'; then exit 1; fi

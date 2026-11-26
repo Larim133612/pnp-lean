@@ -28,3 +28,5 @@ import Pnp.Oracle.BGS
 import Pnp.Oracle.Combinators
 import Pnp.Oracle.BGSA
 import Pnp.Oracle.Relativization
+import Pnp.NaturalProofs.Barrier
+import Pnp.NaturalProofs.NonVacuity
