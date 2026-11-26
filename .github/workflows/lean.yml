@@ -94,6 +94,15 @@ jobs:
           #print axioms Pnp.NaturalProofs.shannon_large
           #print axioms Pnp.NaturalProofs.shannon_useful
           #print axioms Pnp.NaturalProofs.shannon_large_useful
+          #print axioms Pnp.Algebrize.isExtension_empty
+          #print axioms Pnp.Algebrize.exists_vanishing_indicator
+          #print axioms Pnp.Algebrize.isExtension_mle
+          #print axioms Pnp.Algebrize.NP_subset_P_oracleT
+          #print axioms Pnp.Algebrize.exists_ext_NPA_subset_P
+          #print axioms Pnp.Algebrize.exists_ext_LB_not_mem_PA
+          #print axioms Pnp.Algebrize.exists_ext_NP_not_subset_PA
+          #print axioms Pnp.Algebrize.aaronson_wigderson
+          #print axioms Pnp.Algebrize.algebrization_barrier
           LEAN
           lake env lean /tmp/Axioms.lean | tee /tmp/axioms.txt
           if grep -v -E 'propext|Classical.choice|Quot.sound' /tmp/axioms.txt | grep -q 'depends on axioms'; then exit 1; fi
