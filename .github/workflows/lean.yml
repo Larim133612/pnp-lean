@@ -106,6 +106,9 @@ jobs:
           #print axioms Pnp.Relativize.Official.inPolynomialTime_of_mem_P_empty
           #print axioms Pnp.Relativize.runFor_take
           #print axioms Pnp.Relativize.OfficialNP.inNP_of_mem_NP_empty
+          #print axioms Pnp.Relativize.FromTM2.sim
+          #print axioms Pnp.Relativize.FromTM2.sim_step'
+          #print axioms Pnp.Relativize.FromTM2.sim_iter
           LEAN
           lake env lean /tmp/Axioms.lean | tee /tmp/axioms.txt
           if grep -v -E 'propext|Classical.choice|Quot.sound' /tmp/axioms.txt | grep -q 'depends on axioms'; then exit 1; fi
