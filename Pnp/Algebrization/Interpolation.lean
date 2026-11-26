@@ -93,7 +93,7 @@ noncomputable def comboEval {F : Type*} [Field F] (n : ℕ) (Y : Finset (Fin n �
     funext y
     simp [combo, Finset.mul_sum, mul_assoc]
 
-/-- For any set `Y` of `t` points of `F^n`, all but at most `t` Boolean points `z` admit a
+/-- For any set `Y` of `t` points of `F^n`, all but at most `t` Boolean points `z` have a
 multiquadratic polynomial that vanishes on `Y` and restricts to the indicator of `z` on
 the Boolean cube. -/
 theorem exists_vanishing_indicator {F : Type*} [Field F] (n : ℕ) (Y : Finset (Fin n → F)) :
