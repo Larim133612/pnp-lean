@@ -597,6 +597,38 @@ theorem sim_iter (c₀ : Turing.TM2.Cfg tm.Γ tm.Λ tm.σ) (stk₀ : ℕ → Str
     · rw [Nat.succ_mul]; omega
     · rw [iterate_succ_apply']; exact hE₂
 
+/-- **A whole run.** If `tm` outputs `[g]` from input `l` within `T` steps, the compiled program
+started (at address `0`) on an encoding of the initial stacks reaches the halting instruction
+with answer `e₁ g` within `T * (Dm * B) + N + 1` steps. -/
+theorem run_compiled {l : List (tm.Γ tm.k₀)} {g : tm.Γ tm.k₁} {T : ℕ}
+    (ho : TM2OutputsInTime tm l (some [g]) T) (stk : ℕ → Str)
+    (hE : Enc tm ly (initList tm l : Turing.TM2.Cfg tm.Γ tm.Λ tm.σ).stk stk) :
+    ∃ t σ', t ≤ T * (Dm tm * B tm ly) + 1 + N tm ly tm.k₁ ∧
+      Reach ∅ (prog tm ly e₁) 0 stk (idx tm ly (.fin (e₁ g))) σ' t := by
+  obtain ⟨hT, -⟩ := Pnp.PPoly.outputsInTime_step' tm ho
+  have hS := Pnp.PPoly.iterate_step'_stkInA tm l
+  obtain ⟨stk₁, t₁, h₁, ht₁, hE₁⟩ := sim_iter tm ly e₁ _ stk hS hE T
+  rw [hT] at h₁ hE₁
+  have hSf := hS T
+  rw [hT] at hSf
+  have hStop : (haltList tm [g] : Turing.TM2.Cfg tm.Γ tm.Λ tm.σ).stk tm.k₁ = g :: [] := by
+    simp [haltList]
+  have hg : g ∈ A tm tm.k₁ := hSf tm.k₁ g (by rw [hStop]; simp)
+  have hrep : rep tm (haltList tm [g]) = .exec .halt tm.initialState := rfl
+  rw [hrep] at h₁
+  have h₂ := reach_nop (stk := stk₁)
+    (nop_of tm ly e₁ (exec_mem tm ly (halt_mem tm) tm.initialState) rfl)
+  have hN := N_le_Nm tm ly tm.k₁
+  obtain ⟨t₃, ht₃, h₃⟩ := reach_top tm ly e₁ (k := tm.k₁) (z := idx tm ly (.fin false))
+    (R := fun c => idx tm ly (.out c)) (T := fun i => idx tm ly (.fin (ans tm ly e₁ i)))
+    (fun c hc => by rw [prog_idx tm ly e₁ (out_mem tm ly (by omega))]; rfl) hSf hE₁ hStop
+  have hans : ans tm ly e₁ (ix tm ly tm.k₁ g) = e₁ g := by
+    simp only [ans, sy_ix tm ly hg]
+  rw [hans] at h₃
+  have h0 : idx tm ly (rep tm (initList tm l)) = 0 := idx_init tm ly
+  rw [h0] at h₁
+  exact ⟨t₁ + 1 + t₃, _, by omega, (h₁.trans h₂).trans h₃⟩
+
 /-! ### The layout for the input alphabet `Bool` -/
 
 section BoolLayout
