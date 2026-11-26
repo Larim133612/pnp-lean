@@ -29,6 +29,11 @@ no `sorry` and depends only on Lean's standard axioms
 | `Pnp/PPoly/TM2Local.lean` | Locality of Mathlib's two-stack (TM2) machines: one step replaces each stack `S k` by `W k ++ drop (P k) (S k)`, where `W, P` and the new control state depend only on the top `depth` cells (`stepAux_eq_nf`, `stk_getElem?_stepAux`); stack lengths grow by `≤ D` per step; reachable stack symbols lie in a finite set `A tm k` even when the stack alphabet type is infinite (`A_finite`, `iterate_step'_stkInA`); a run within time `T` is `T` iterations of a total step (`outputsInTime_step'`). |
 | `Pnp/PPoly/Encode.lean`, `Pnp/PPoly/Simulate.lean` | One-hot encoding of strings and configurations (stacks as arrays of length `n + T·D + 1`); the encoded step is a local map; a machine running in polynomial time `time` is simulated by circuits of size given by an explicit polynomial (`simulate`). |
 | `Pnp/PPoly/PPoly.lean`, `Pnp/PPoly/NonVacuity.lean` | **P ⊆ P/poly (M5).** `InPPoly L`: for every `n ≥ 1` a circuit of size `≤ p(n)` decides `L` on one-hot encoded strings of length `n`. Every language in the upstream class P (`InPolynomialTime`, Mathlib `TM2ComputableInPolyTime`) is in P/poly (`inPPoly_of_inPolynomialTime`). **Connection to the official statement:** if some language in the upstream NP has no polynomial-size circuits, then `Millennium.ClayPVersusNP.Formulations.NegativeBranch` (P ≠ NP) holds (`negativeBranch_of_not_inPPoly`). This is conditional: proving such a lower bound for an NP language is open. Non-vacuity (`NonVacuity.lean`): over every alphabet with two symbols some language is not in P/poly (`exists_not_inPPoly`, Shannon counting), and the trivial language is (`inPPoly_true`). |
+| `Pnp/Oracle/Machine.lean`, `Pnp/Oracle/Locality.lean` | **Oracle stack machines (M8).** Our own concrete model: a program is a finite list of `push`/`pop`/`query`/`halt` instructions on unboundedly many bit stacks; `query k` asks whether the content of stack `k` lies in the oracle (cost 1 step; writing the query costs 1 step per bit). Relativized classes `P O` and `NP O` with time `(n+2)^k` (certificates of length `≤ (n+2)^k` on stack 1). A run of `t` steps makes `≤ t` queries and depends only on the oracle on those queries (`queries_length_le`, `runFor_congr`). |
+| `Pnp/Oracle/PSubsetNP.lean` | `P O ⊆ NP O` for every oracle (`P_subset_NP`), by renaming stacks so the certificate is never touched. |
+| `Pnp/Oracle/BGS.lean` | **Baker–Gill–Solovay, oracle B:** `L_B = {x : ∃ w ∈ B, |w| = |x|}` is in `NP^B` for every `B` (`LB_mem_NP`, explicit 6-instruction verifier), and by diagonalisation over all (program, exponent) pairs some `B` has `L_B ∉ P^B` (`LB_not_mem_P`); hence `P^B ⊊ NP^B` (`exists_oracle_P_ssubset_NP`). |
+| `Pnp/Oracle/Combinators.lean`, `Pnp/Oracle/BGSA.lean` | **Baker–Gill–Solovay, oracle A:** a self-referential oracle defined by well-founded recursion on string length, `code(i,x,T) ∈ A` iff verifier `i` accepts `x` with oracle `A` (padding `T` makes all its queries shorter than the code). An explicit deterministic machine writes `code(i, x, (|x|+2)^{k+1})` (nested counting loops) and queries it in time `(n+2)^{3(k+1)+i+11}` (`queryProg_run`, `queryTime_le`), so `NP^A ⊆ P^A` (`exists_oracle_NP_subset_P`). |
+| `Pnp/Oracle/Relativization.lean` | **Relativization barrier:** `∃ A, P^A = NP^A` and `∃ B, P^B ⊊ NP^B` (`baker_gill_solovay`); hence neither `P^O = NP^O` nor `P^O ≠ NP^O` holds for all oracles (`relativization_barrier`). Caveat: this is a theorem about our oracle model; the model is not formally proved equivalent to the upstream (unrelativized) TM2 classes, and "a proof technique relativizes" is a meta-level notion that is not itself formalized. |
 | `Pnp/Upstream/*.lean` | P vs NP problem statement from [lean-dojo/LeanMillenniumPrizeProblems](https://github.com/lean-dojo/LeanMillenniumPrizeProblems) (Apache-2.0), imports adapted. Target: `Millennium.ClayPVersusNP.Formulations.NegativeBranch`. |
 
 ## Roadmap
@@ -52,9 +57,12 @@ no `sorry` and depends only on Lean's standard axioms
   - [x] M5d non-vacuity: some language is not in P/poly
 - [x] M6 PARITY ∉ AC⁰ for circuits (DAGs) via unfolding to formulas of size `≤ s^d`
 - [x] M7 Schnorr: `Th₂` needs `2n − 3` gates in B₂ (gate elimination)
+- [x] M8 Relativization barrier (Baker–Gill–Solovay) in an oracle stack-machine model
+  - [x] M8a oracle `B` with `P^B ⊊ NP^B` (diagonalisation)
+  - [x] M8b oracle `A` with `P^A = NP^A` (self-referential padded oracle)
 
 Known barriers (relativization, natural proofs, algebrization) mean none of these
-techniques can by themselves separate P from NP.
+techniques can by themselves separate P from NP. M8 formalizes the first of them.
 
 ## Build
 

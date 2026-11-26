@@ -72,6 +72,20 @@ jobs:
           #print axioms Pnp.Circuits.not_hasCircuitOfSize_th2
           #print axioms Pnp.Circuits.le_size_of_depends
           #print axioms Pnp.Circuits.th2_hasCircuitOfSize
+          #print axioms Pnp.Relativize.runFor_congr
+          #print axioms Pnp.Relativize.queries_length_le
+          #print axioms Pnp.Relativize.P_subset_NP
+          #print axioms Pnp.Relativize.LB_mem_NP
+          #print axioms Pnp.Relativize.LB_not_mem_P
+          #print axioms Pnp.Relativize.exists_oracle_P_ne_NP
+          #print axioms Pnp.Relativize.exists_oracle_P_ssubset_NP
+          #print axioms Pnp.Relativize.runFor_congr_short
+          #print axioms Pnp.Relativize.queryProg_run
+          #print axioms Pnp.Relativize.queryTime_le
+          #print axioms Pnp.Relativize.exists_oracle_NP_subset_P
+          #print axioms Pnp.Relativize.exists_oracle_P_eq_NP
+          #print axioms Pnp.Relativize.baker_gill_solovay
+          #print axioms Pnp.Relativize.relativization_barrier
           LEAN
           lake env lean /tmp/Axioms.lean | tee /tmp/axioms.txt
           if grep -v -E 'propext|Classical.choice|Quot.sound' /tmp/axioms.txt | grep -q 'depends on axioms'; then exit 1; fi
