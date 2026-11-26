@@ -54,6 +54,16 @@ jobs:
           #print axioms Pnp.AC0.parity_ac0_lower_bound_of_depth_le
           #print axioms Pnp.AC0.parity_not_in_AC0
           #print axioms Pnp.AC0.exists_parity_formula
+          #print axioms Pnp.Circuits.hasMCircuitOfSize_local
+          #print axioms Pnp.Circuits.HasMCircuitOfSize.iterate
+          #print axioms Pnp.PPoly.stepAux_eq_nf
+          #print axioms Pnp.PPoly.outputsInTime_step'
+          #print axioms Pnp.PPoly.simulate
+          #print axioms Pnp.PPoly.inPPoly_of_inPolynomialTime
+          #print axioms Pnp.PPoly.ppoly_of_clayPVersusNP
+          #print axioms Pnp.PPoly.negativeBranch_of_not_inPPoly
+          #print axioms Pnp.PPoly.exists_not_inPPoly
+          #print axioms Pnp.PPoly.inPPoly_true
           LEAN
           lake env lean /tmp/Axioms.lean | tee /tmp/axioms.txt
           if grep -v -E 'propext|Classical.choice|Quot.sound' /tmp/axioms.txt | grep -q 'depends on axioms'; then exit 1; fi
