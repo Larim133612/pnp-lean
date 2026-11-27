@@ -261,3 +261,9 @@ import Pnp.Karp.M2Prog
 import Pnp.Karp.M2Ver
 import Pnp.Karp.M2NP
 import Pnp.Karp.M2NPC
+import Pnp.Karp.BinPacking
+import Pnp.Karp.BinPackingRed
+import Pnp.Karp.BinPackingProg
+import Pnp.Karp.BinPackingVer
+import Pnp.Karp.BinPackingNP
+import Pnp.Karp.BinPackingNPC
