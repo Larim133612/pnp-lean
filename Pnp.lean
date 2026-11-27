@@ -53,3 +53,4 @@ import Pnp.NaturalProofs.BlumMicali
 import Pnp.Derandomization.NisanWigderson
 import Pnp.Derandomization.HardFunctions
 import Pnp.Derandomization.Adleman
+import Pnp.Derandomization.BPP

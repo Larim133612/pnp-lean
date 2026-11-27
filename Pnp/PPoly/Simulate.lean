@@ -353,16 +353,18 @@ theorem hasCircuitOfSize_outF (B : ℕ) (y₁ : tm.Γ tm.k₁) :
 
 end Sim
 
-/-- **Circuit simulation of a polynomial-time `FinTM2`.** If `tm` maps every string `w` (input
-alphabet `α`, via `eIn`) to the one-symbol output `[out w]` within `time.eval |w|` steps, then the
-predicate `out w = y₁` has polynomial-size circuits on one-hot encoded inputs. -/
-theorem simulate {α : Type} [Fintype α] [DecidableEq α] [Nonempty α] (tm : FinTM2)
+/-- **Circuit simulation of a polynomial-time `FinTM2` on a set `S` of inputs.** If `tm` maps
+every string `w ∈ S` (input alphabet `α`, via `eIn`) to the one-symbol output `[out w]` within
+`time.eval |w|` steps, then the predicate `out w = y₁` has polynomial-size circuits that are
+correct on the one-hot encodings of the strings in `S`. -/
+theorem simulateOn {α : Type} [Fintype α] [DecidableEq α] [Nonempty α] (tm : FinTM2)
     (eIn : tm.Γ tm.k₀ ≃ α) (time : Polynomial ℕ) (out : List α → tm.Γ tm.k₁) (y₁ : tm.Γ tm.k₁)
-    (hrun : ∀ w : List α,
+    (S : List α → Prop)
+    (hrun : ∀ w : List α, S w →
       TM2OutputsInTime tm (w.map eIn.symm) (some [out w]) (time.eval w.length)) :
     ∃ p : Polynomial ℕ, ∀ n, 0 < n → ∃ f : (Fin (n * Fintype.card α) → Bool) → Bool,
       HasCircuitOfSize f (p.eval n) ∧
-        ∀ w : List α, w.length = n → (f (oneHot n w) = true ↔ out w = y₁) := by
+        ∀ w : List α, S w → w.length = n → (f (oneHot n w) = true ↔ out w = y₁) := by
   letI := tm.ΛFin; letI := tm.σFin; letI := tm.kFin
   let c₀ := Fintype.card (Option tm.Λ) + Fintype.card tm.σ
   let c₁ := ∑ k, Fintype.card (Option (A tm k))
@@ -382,8 +384,8 @@ theorem simulate {α : Type} [Fintype α] [DecidableEq α] [Nonempty α] (tm : F
     rw [hM]
     simp only [Mp, B, T, J₀, J, J₁, Polynomial.eval_add, Polynomial.eval_mul, Polynomial.eval_C,
       Polynomial.eval_X, Polynomial.eval_one]
-  · intro w hw
-    obtain ⟨hfin, hlen⟩ := outputsInTime_step' tm (hrun w)
+  · intro w hS hw
+    obtain ⟨hfin, hlen⟩ := outputsInTime_step' tm (hrun w hS)
     simp only [List.length_map, hw] at hlen
     rw [hw] at hfin
     have hlen' : ∀ t < T, ∀ k, (((step' tm)^[t] (initList tm (w.map eIn.symm)) :
@@ -405,5 +407,16 @@ theorem simulate {α : Type} [Fintype α] [DecidableEq α] [Nonempty α] (tm : F
     simp only [Function.comp_apply]
     rw [hin, stF_iterate, hit, outF_comp, hcell]
     simp
+
+/-- **Circuit simulation of a polynomial-time `FinTM2`** (all inputs). -/
+theorem simulate {α : Type} [Fintype α] [DecidableEq α] [Nonempty α] (tm : FinTM2)
+    (eIn : tm.Γ tm.k₀ ≃ α) (time : Polynomial ℕ) (out : List α → tm.Γ tm.k₁) (y₁ : tm.Γ tm.k₁)
+    (hrun : ∀ w : List α,
+      TM2OutputsInTime tm (w.map eIn.symm) (some [out w]) (time.eval w.length)) :
+    ∃ p : Polynomial ℕ, ∀ n, 0 < n → ∃ f : (Fin (n * Fintype.card α) → Bool) → Bool,
+      HasCircuitOfSize f (p.eval n) ∧
+        ∀ w : List α, w.length = n → (f (oneHot n w) = true ↔ out w = y₁) := by
+  obtain ⟨p, hp⟩ := simulateOn tm eIn time out y₁ (fun _ => True) fun w _ => hrun w
+  exact ⟨p, fun n hn => (hp n hn).imp fun f hf => ⟨hf.1, fun w hw => hf.2 w trivial hw⟩⟩
 
 end Pnp.PPoly
