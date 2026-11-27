@@ -56,6 +56,7 @@ import Pnp.Derandomization.NisanWigderson
 import Pnp.Derandomization.HardFunctions
 import Pnp.Derandomization.Adleman
 import Pnp.Derandomization.Hardcore
+import Pnp.Derandomization.HardcoreSet
 import Pnp.Derandomization.XorLemma
 import Pnp.Derandomization.BPP
 import Pnp.Derandomization.Lautemann
