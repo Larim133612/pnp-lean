@@ -554,6 +554,65 @@ theorem prob_mono {α : Type} [Fintype α] {P Q : α → Prop} (h : ∀ a, P a �
   rw [prob_eq_ex, prob_eq_ex]
   exact ex_mono fun a => by unfold ind; split_ifs with h1 h2 <;> simp_all
 
+/-- **Goldreich–Levin at one length, in the form used asymptotically.** If no circuit with
+`S` gates inverts `f` with probability `≥ 1/R`, where `S`, `R` dominate explicit polynomials in
+`L ≥ a`, `ρ` and `sB`, then every predictor with `sB` gates has advantage `< 1/ρ`. -/
+theorem hardcore_at {a sB ρ L S R : ℕ} (ha : 0 < a) (hL : a ≤ L) (f : Seed a → Seed a)
+    {B : (Fin (a + a) → Bool) → Bool} (hB : HasCircuitOfSize B sB)
+    (hS : 102 * L * (2 * (2 * L * ρ ^ 2 + 1)) ^ 2 * (L + sB + 1) ≤ S)
+    (hR : 8 * ρ * (2 * L * ρ ^ 2 + 1) ≤ R)
+    (hard : ∀ I : Seed a → Seed a, HasMCircuitOfSize I S →
+      prob (fun x => f (I (f x)) = f x) * R < 1) :
+    (prob (fun p : Seed a × Seed a => pred B (f p.1) p.2 = ip p.1 p.2) - 1 / 2) * ρ < 1 := by
+  by_contra hcon
+  push Not at hcon
+  have hρ0 : 0 < ρ := by
+    rcases Nat.eq_zero_or_pos ρ with h | h
+    · rw [h] at hcon; norm_num at hcon
+    · exact h
+  have hρR : (0 : ℝ) < ρ := by exact_mod_cast hρ0
+  obtain ⟨ε, hεdef⟩ : ∃ ε : ℝ, ε = 1 / ρ := ⟨_, rfl⟩
+  have hε : 0 < ε := by rw [hεdef]; positivity
+  have hpred : 1 / 2 + ε ≤ prob (fun p : Seed a × Seed a => pred B (f p.1) p.2 = ip p.1 p.2) := by
+    have : ε ≤ prob (fun p : Seed a × Seed a => pred B (f p.1) p.2 = ip p.1 p.2) - 1 / 2 := by
+      rw [hεdef, div_le_iff₀ hρR]; linarith
+    linarith
+  obtain ⟨A, hA⟩ : ∃ A, 2 * a * ρ ^ 2 + 1 = A := ⟨_, rfl⟩
+  obtain ⟨l, hl⟩ : ∃ l, Nat.log 2 A + 1 = l := ⟨_, rfl⟩
+  have hAl : A < 2 ^ l := by rw [← hl]; exact Nat.lt_pow_succ_log_self (by norm_num) A
+  have hlA : 2 ^ l ≤ 2 * A := by
+    rw [← hl, pow_succ, mul_comm]
+    exact Nat.mul_le_mul_left 2 (Nat.pow_log_le_self 2 (by omega))
+  have hm : 2 * ((a : ℕ) : ℝ) ≤ ((2 ^ l - 1 : ℕ) : ℝ) * ε ^ 2 := by
+    have h1 : 2 * a * ρ ^ 2 ≤ 2 ^ l - 1 := by omega
+    have h2 : ((2 * a * ρ ^ 2 : ℕ) : ℝ) ≤ ((2 ^ l - 1 : ℕ) : ℝ) := by exact_mod_cast h1
+    push_cast at h2
+    rw [hεdef, div_pow, one_pow, mul_one_div, le_div_iff₀ (by positivity)]
+    exact h2
+  have hl0 : 0 < l := by omega
+  obtain ⟨I, hI, hsucc⟩ := goldreich_levin ha hl0 hB hε hm hpred
+  have hm0 : 0 < 2 ^ l - 1 := by omega
+  have hAL : A ≤ 2 * L * ρ ^ 2 + 1 := by rw [← hA]; gcongr
+  have hsize : glInvSize a (2 ^ l - 1) sB ≤ S := by
+    refine (glInvSize_le hm0).trans (le_trans ?_ hS)
+    have hm1 : 2 ^ l - 1 ≤ 2 * (2 * L * ρ ^ 2 + 1) := by omega
+    gcongr
+  have hinv := hard I (hI.mono hsize)
+  have hmono : prob (fun x => I (f x) = x) ≤ prob (fun x => f (I (f x)) = f x) :=
+    prob_mono fun x h => by rw [h]
+  have hR' : (8 * ρ * (2 * L * ρ ^ 2 + 1) : ℝ) ≤ R := by exact_mod_cast hR
+  have hA' : (A : ℝ) ≤ 2 * L * ρ ^ 2 + 1 := by exact_mod_cast hAL
+  have hlA' : (2 : ℝ) ^ l ≤ 2 * A := by exact_mod_cast hlA
+  have hkey : 1 ≤ ε / 2 ^ (l + 2) * (8 * ρ * (2 * L * ρ ^ 2 + 1)) := by
+    rw [hεdef, pow_add]
+    have h2l : (0 : ℝ) < 2 ^ l := by positivity
+    rw [div_div, one_div_mul_eq_div, le_div_iff₀ (by positivity)]
+    nlinarith
+  have h0 : (0 : ℝ) ≤ 8 * ρ * (2 * L * ρ ^ 2 + 1) := by positivity
+  have hp0 : 0 ≤ prob (fun x => f (I (f x)) = f x) := prob_nonneg _
+  nlinarith [mul_le_mul_of_nonneg_right (hsucc.trans hmono) h0,
+    mul_le_mul_of_nonneg_left hR' hp0]
+
 /-- **Goldreich–Levin, asymptotic form.** If `F` is one-way along `μ(n) > 0`, then the inner
 product is a hardcore predicate of `(x, r) ↦ (F x, r)`: every circuit with `q(2ⁿ)` gates
 predicts `⟨x, r⟩` with advantage `< 1 / r(2ⁿ)` over a coin flip, for all large `n`. -/
@@ -566,71 +625,10 @@ theorem OWF.hardcore_ip (F : OWF) (μ : Polynomial ℕ) (hμ : ∀ n, 0 < μ.eva
   obtain ⟨N, hN⟩ := hF (102 * μ * (2 * (2 * μ * r ^ 2 + 1)) ^ 2 * (μ + q + 1))
     (8 * r * (2 * μ * r ^ 2 + 1))
   refine ⟨N, fun n hn B hB => ?_⟩
-  by_contra hcon
-  push Not at hcon
-  obtain ⟨ρ, hρ⟩ : ∃ ρ, r.eval (2 ^ n) = ρ := ⟨_, rfl⟩
-  rw [hρ] at hcon
-  have hρ0 : 0 < ρ := by
-    rcases Nat.eq_zero_or_pos ρ with h | h
-    · rw [h] at hcon; norm_num at hcon
-    · exact h
-  have hρR : (0 : ℝ) < ρ := by exact_mod_cast hρ0
-  obtain ⟨ε, hεdef⟩ : ∃ ε : ℝ, ε = 1 / ρ := ⟨_, rfl⟩
-  have hε : 0 < ε := by rw [hεdef]; positivity
-  have hpred : 1 / 2 + ε ≤ prob (fun p : Seed (μ.eval n) × Seed (μ.eval n) =>
-      pred B (F.f _ p.1) p.2 = ip p.1 p.2) := by
-    have : ε ≤ prob (fun p : Seed (μ.eval n) × Seed (μ.eval n) =>
-        pred B (F.f _ p.1) p.2 = ip p.1 p.2) - 1 / 2 := by
-      rw [hεdef, div_le_iff₀ hρR]; linarith
-    linarith
-  -- parameters
-  obtain ⟨A, hA⟩ : ∃ A, 2 * μ.eval n * ρ ^ 2 + 1 = A := ⟨_, rfl⟩
-  obtain ⟨l, hl⟩ : ∃ l, Nat.log 2 A + 1 = l := ⟨_, rfl⟩
-  have hAl : A < 2 ^ l := by rw [← hl]; exact Nat.lt_pow_succ_log_self (by norm_num) A
-  have hlA : 2 ^ l ≤ 2 * A := by
-    rw [← hl, pow_succ, mul_comm]
-    exact Nat.mul_le_mul_left 2 (Nat.pow_log_le_self 2 (by omega))
-  have hm : 2 * ((μ.eval n : ℕ) : ℝ) ≤ ((2 ^ l - 1 : ℕ) : ℝ) * ε ^ 2 := by
-    have h1 : 2 * μ.eval n * ρ ^ 2 ≤ 2 ^ l - 1 := by omega
-    have h2 : ((2 * μ.eval n * ρ ^ 2 : ℕ) : ℝ) ≤ ((2 ^ l - 1 : ℕ) : ℝ) := by exact_mod_cast h1
-    push_cast at h2
-    rw [hεdef, div_pow, one_pow, mul_one_div, le_div_iff₀ (by positivity)]
-    exact h2
-  have hl0 : 0 < l := by omega
-  obtain ⟨I, hI, hsucc⟩ := goldreich_levin (hμ n) hl0 hB hε hm hpred
-  -- size bound
-  have hm0 : 0 < 2 ^ l - 1 := by omega
-  have hμmono : μ.eval n ≤ μ.eval (2 ^ n) := polynomial_eval_mono μ Nat.lt_two_pow_self.le
-  have hsize : glInvSize (μ.eval n) (2 ^ l - 1) (q.eval (2 ^ n)) ≤
-      (102 * μ * (2 * (2 * μ * r ^ 2 + 1)) ^ 2 * (μ + q + 1) : Polynomial ℕ).eval (2 ^ n) := by
-    refine (glInvSize_le hm0).trans ?_
-    simp only [Polynomial.eval_mul, Polynomial.eval_add, Polynomial.eval_pow,
-      Polynomial.eval_ofNat, Polynomial.eval_one]
-    rw [hρ]
-    have hm1 : 2 ^ l - 1 ≤ 2 * (2 * μ.eval (2 ^ n) * ρ ^ 2 + 1) := by
-      have : A ≤ 2 * μ.eval (2 ^ n) * ρ ^ 2 + 1 := by
-        rw [← hA]; gcongr
-      omega
-    gcongr
-  have hinv := hN n hn I (hI.mono hsize)
-  have hmono : prob (fun x => I (F.f _ x) = x) ≤ prob (fun x => F.f _ (I (F.f _ x)) = F.f _ x) :=
-    prob_mono fun x h => by rw [h]
-  have hr' : (((8 * r * (2 * μ * r ^ 2 + 1) : Polynomial ℕ).eval (2 ^ n) : ℕ) : ℝ) =
-      8 * ρ * (2 * μ.eval (2 ^ n) * ρ ^ 2 + 1) := by
-    simp [hρ]
-  rw [hr'] at hinv
-  -- `ε / 2^(l+2) * (8 ρ A') ≥ 1`
-  have hA' : (A : ℝ) ≤ 2 * μ.eval (2 ^ n) * ρ ^ 2 + 1 := by
-    have : A ≤ 2 * μ.eval (2 ^ n) * ρ ^ 2 + 1 := by rw [← hA]; gcongr
-    exact_mod_cast this
-  have hlA' : (2 : ℝ) ^ l ≤ 2 * A := by exact_mod_cast hlA
-  have hkey : 1 ≤ ε / 2 ^ (l + 2) * (8 * ρ * (2 * μ.eval (2 ^ n) * ρ ^ 2 + 1)) := by
-    rw [hεdef, pow_add]
-    have h2l : (0 : ℝ) < 2 ^ l := by positivity
-    rw [div_div, one_div_mul_eq_div, le_div_iff₀ (by positivity)]
-    nlinarith
-  have h0 : (0 : ℝ) ≤ 8 * ρ * (2 * μ.eval (2 ^ n) * ρ ^ 2 + 1) := by positivity
-  nlinarith [mul_le_mul_of_nonneg_right (hsucc.trans hmono) h0]
+  refine hardcore_at (hμ n) (polynomial_eval_mono μ Nat.lt_two_pow_self.le) _ hB ?_ ?_
+    (hN n hn)
+  · simp
+  · simp
 
 end
 

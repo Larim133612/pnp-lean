@@ -48,3 +48,5 @@ import Pnp.Oracle.FromNP
 import Pnp.Oracle.NPEquiv
 import Pnp.NaturalProofs.GGM
 import Pnp.NaturalProofs.GoldreichLevin
+import Pnp.NaturalProofs.BMCircuits
+import Pnp.NaturalProofs.BlumMicali
