@@ -62,3 +62,4 @@ import Pnp.TM2.Compose
 import Pnp.TM2.Homomorphism
 import Pnp.Derandomization.LautemannList
 import Pnp.Oracle.CheckProg
+import Pnp.Oracle.Struct
