@@ -79,3 +79,6 @@ import Pnp.KarpLipton.DenseWitness
 import Pnp.KarpLipton.DTab
 import Pnp.KarpLipton.DProg
 import Pnp.KarpLipton.Collapse
+import Pnp.CookLevin.Shape
+import Pnp.CookLevin.FunBridge
+import Pnp.CookLevin.TabLocal
