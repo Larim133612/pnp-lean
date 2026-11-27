@@ -89,3 +89,10 @@ import Pnp.Karp.Basic
 import Pnp.Karp.ThreeSAT
 import Pnp.Karp.ThreeSATNP
 import Pnp.Karp.ThreeSATProg
+import Pnp.Karp.Clique
+import Pnp.Karp.CliqueRed
+import Pnp.Karp.CliqueVer
+import Pnp.Karp.CliqueNP
+import Pnp.Karp.CliqueGen
+import Pnp.Karp.CliqueProg
+import Pnp.Karp.CliqueNPC
