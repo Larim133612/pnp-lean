@@ -101,6 +101,7 @@ no `sorry` and depends only on Lean's standard axioms
 - [x] M23 Valiant–Vazirani isolation (`isolation`, `valiant_vazirani`): random hashing leaves a unique solution with probability ≥ 1/8
 - [x] M24 official `P ⊆ NP` without the composition hypothesis (`p_subset_np`, hand-built projection-then-decide TM2 machine) and official `P ⊆ BPP` (`inBPP_of_inPolynomialTime`)
 - [x] M25 polynomial-time `TM2` computability is closed under composition (`comp`), so every upstream result conditional on `PolynomialTimeComputableComposition` holds unconditionally
+- [x] M26 official `BPP ⊆ Σ₂ᴾ` over `Bool` (`bpp_subset_sigma2`): Sipser–Gács–Lautemann with amplification, the inner predicate decided by a stack program written in a small structured language (`Pnp/Oracle/Struct.lean`), transferred to the official nested pair encoding by a symbol-wise homomorphism TM2 machine (`inPolynomialTime_of_code`)
 - [x] M11 Connect the oracle model to the official classes
   - [x] M11a `P ∅ ⊆ P` (official, alphabet `Bool`)
   - [x] M11b `NP ∅ ⊆ NP` (official)

@@ -133,6 +133,12 @@ jobs:
           #print axioms Pnp.Relativize.NPEquiv.mem_NP_empty_of_inNP
           #print axioms Pnp.Relativize.NPEquiv.mem_NP_empty_iff
           #print axioms Pnp.Relativize.NPEquiv.official_P_eq_NP_bool_iff
+          #print axioms Pnp.TM2Hom.inPolynomialTime_of_code
+          #print axioms Pnp.Derand.sigma2_intro
+          #print axioms Pnp.Derand.lautemann_list
+          #print axioms Pnp.Relativize.NPEquiv.checkProg
+          #print axioms Pnp.Relativize.Struct.runFor_toProg
+          #print axioms Pnp.Derand.bpp_subset_sigma2
           LEAN
           lake env lean /tmp/Axioms.lean | tee /tmp/axioms.txt
           if grep -v -E 'propext|Classical.choice|Quot.sound' /tmp/axioms.txt | grep -q 'depends on axioms'; then exit 1; fi
