@@ -159,3 +159,13 @@ import Pnp.Karp.HPathProg
 import Pnp.Karp.HPathVer
 import Pnp.Karp.HPathNP
 import Pnp.Karp.HPathNPC
+import Pnp.Karp.ThreeDM
+import Pnp.Karp.ThreeDMComb
+import Pnp.Karp.ThreeDMRed
+import Pnp.Karp.ThreeDMGen
+import Pnp.Karp.ThreeDMProg
+import Pnp.Karp.ThreeDMVer
+import Pnp.Karp.ThreeDMNP
+import Pnp.Karp.X3CVer
+import Pnp.Karp.X3CNP
+import Pnp.Karp.ThreeDMNPC
