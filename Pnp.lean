@@ -85,3 +85,7 @@ import Pnp.CookLevin.TabLocal
 import Pnp.CookLevin.ShapeSat
 import Pnp.CookLevin.TabInst
 import Pnp.CookLevin.NPComplete
+import Pnp.Karp.Basic
+import Pnp.Karp.ThreeSAT
+import Pnp.Karp.ThreeSATNP
+import Pnp.Karp.ThreeSATProg
