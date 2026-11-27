@@ -84,3 +84,4 @@ import Pnp.CookLevin.FunBridge
 import Pnp.CookLevin.TabLocal
 import Pnp.CookLevin.ShapeSat
 import Pnp.CookLevin.TabInst
+import Pnp.CookLevin.NPComplete
