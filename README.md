@@ -103,6 +103,7 @@ no `sorry` and depends only on Lean's standard axioms
 - [x] M25 polynomial-time `TM2` computability is closed under composition (`comp`), so every upstream result conditional on `PolynomialTimeComputableComposition` holds unconditionally
 - [x] M26 official `BPP ⊆ Σ₂ᴾ` over `Bool` (`bpp_subset_sigma2`): Sipser–Gács–Lautemann with amplification, the inner predicate decided by a stack program written in a small structured language (`Pnp/Oracle/Struct.lean`), transferred to the official nested pair encoding by a symbol-wise homomorphism TM2 machine (`inPolynomialTime_of_code`)
 - [x] M27 SAT ∈ NP for the official class (`Pnp.CookLevin.sat_in_np`): dense CNF formulas over `{pos, neg, zero, sep}` (`SATLang`, clause form `clauses_sat_iff`), verified by a structured stack program in time `(n+2)^4` on all inputs; first half of Cook–Levin
+- [x] M28 Tseitin transformation (`Pnp.CookLevin.tseitin_sat_iff`, `length_tseitin_le`): every B₂ circuit `C` with `n` inputs and `s` gates maps to a dense CNF `tseitin C` (one variable per wire, ≤ 4 clauses per gate) that is satisfiable iff `C` is, of length ≤ `(4s+1)(n+s+1)`; combinatorial core of Cook–Levin NP-hardness (uniformity of the map not yet proved)
 - [x] M11 Connect the oracle model to the official classes
   - [x] M11a `P ∅ ⊆ P` (official, alphabet `Bool`)
   - [x] M11b `NP ∅ ⊆ NP` (official)

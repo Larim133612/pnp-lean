@@ -139,6 +139,9 @@ jobs:
           #print axioms Pnp.Relativize.NPEquiv.checkProg
           #print axioms Pnp.Relativize.Struct.runFor_toProg
           #print axioms Pnp.Derand.bpp_subset_sigma2
+          #print axioms Pnp.CookLevin.sat_in_np
+          #print axioms Pnp.CookLevin.tseitin_sat_iff
+          #print axioms Pnp.CookLevin.length_tseitin_le
           LEAN
           lake env lean /tmp/Axioms.lean | tee /tmp/axioms.txt
           if grep -v -E 'propext|Classical.choice|Quot.sound' /tmp/axioms.txt | grep -q 'depends on axioms'; then exit 1; fi
