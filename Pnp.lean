@@ -76,3 +76,6 @@ import Pnp.KarpLipton.KarpLipton
 import Pnp.KarpLipton.Equiv
 import Pnp.KarpLipton.EvalCmd
 import Pnp.KarpLipton.DenseWitness
+import Pnp.KarpLipton.DTab
+import Pnp.KarpLipton.DProg
+import Pnp.KarpLipton.Collapse

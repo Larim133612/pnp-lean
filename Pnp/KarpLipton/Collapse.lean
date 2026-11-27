@@ -1,5 +1,6 @@
 import Pnp.KarpLipton.DProg
 import Pnp.KarpLipton.DenseWitness
+import Pnp.KarpLipton.Equiv
 import Pnp.Oracle.OfficialCode
 import Pnp.Derandomization.LautemannList
 import Pnp.TM2.Homomorphism
@@ -382,6 +383,136 @@ theorem dsem_code (Nc : ℕ) (ix : (α ⊕ Option β) ⊕ Option γ → ℕ) (q0
   rfl
 
 end Sem
+
+/-! ## The collapse -/
+
+/-- The nested pair encoding of the inputs `((w, W), b)` of the inner predicate. -/
+abbrev e4 (α β : Type) [Fintype α] [Fintype β] :
+    Computability.FinEncoding ((List α × List Bool) × List β) :=
+  Millennium.pair_encoding (Millennium.pair_encoding (Millennium.fin_encoding_string α)
+    (Millennium.fin_encoding_string Bool)) (Millennium.fin_encoding_string β)
+
+theorem e4_encode {α β : Type} [Fintype α] [Fintype β] (w : List α) (W : List Bool) (b : List β) :
+    (e4 α β).encode ((w, W), b) = code4 w W b := rfl
+
+/-- **The official Karp–Lipton collapse.**  If `NP ⊆ P/poly`, then every language of the official
+class `Π₂ᴾ` (strings over a finite nonempty alphabet) is in the official class `Σ₂ᴾ`. -/
+theorem pi2_subset_sigma2 (hNP : NPSubsetPPoly) {α : Type} [Fintype α] [DecidableEq α]
+    [Nonempty α] [Primcodable α] {L : Millennium.Language (List α)}
+    (hL : Millennium.polynomial_hierarchy_pi_level 2 (Millennium.fin_encoding_string α) L) :
+    Millennium.polynomial_hierarchy_sigma_level 2 (Millennium.fin_encoding_string α) L := by
+  obtain ⟨T, hT⟩ := smallExistentials_iff.1.2 (smallExistentials_iff.2.2 hNP)
+  obtain ⟨β, _, _, L', hL', p, hp⟩ := hL
+  obtain ⟨γ, _, _, L'', hL'', q, hq⟩ := hL'
+  obtain ⟨q0, Nc, ix, K, -, -, hix, hrun⟩ :=
+    OfficialCode.decide_of_inPolynomialTime (e3 α β γ) hL''
+  let ix' : (α ⊕ Option β) ⊕ Option γ → ℕ := ix
+  have hix' : ∀ g, ix' g < Nc := hix
+  set Q : Polynomial ℕ := if Nonempty γ then q else 0 with hQ
+  set π := mkPar (α := α) (β := β) (γ := γ) Nc ix' q0 p Q with hπdef
+  have hπ : π.Ok := mkPar_ok hix' q0 p Q
+  set ans : List ℕ → List ℕ → List ℕ → Bool := fun iw ib ic =>
+    decide (Millennium.complement L'' ((iw.filterMap (sym α), ib.filterMap (sym β)),
+      ic.filterMap (sym γ))) with hans
+  have hq0 : ∀ iw ib ic : List ℕ, runFor ∅ π.q (tb K (xc π iw ib ic).length)
+      (.run (init [xc π iw ib ic])) = .done (ans iw ib ic) := by
+    intro iw ib ic
+    rw [hπdef, xc_mkPar, ← e3_encode]
+    exact hrun _
+  have hS := dsem_mem_P π hπ K ans hq0
+  let D : Millennium.Language ((List α × List Bool) × List β) := fun t =>
+    Dsem π ans (((e4 α β).encode t).flatMap cD)
+  have hD : Millennium.InPolynomialTime (e4 α β) D :=
+    Pnp.TM2Hom.inPolynomialTime_of_code (e4 α β) cD _ hS D (fun t => Iff.rfl)
+  -- the inner predicate on codes
+  have hDs : ∀ (w : List α) (W : List Bool) (b : List β), D ((w, W), b) ↔
+      p.eval w.length < b.length ∨ ∃ t ≤ Q.eval (w.length + 1 + b.length),
+        L'' ((w, b), (DP.ic (Fintype.card γ) π.dC
+          (evalD (seg (segIt W b.length)).1 (List.ofFn (oneHot (w.length + 1 + b.length) (pe2 w b)))
+            [] false false).reverse t).filterMap (sym γ)) := by
+    intro w W b
+    show Dsem π ans (((e4 α β).encode ((w, W), b)).flatMap cD) ↔ _
+    refine Iff.trans (dsem_code (α := α) (β := β) (γ := γ) Nc ix' q0 p Q ans w W b) ?_
+    simp only [hans, filterMap_sym, decide_eq_false_iff_not, Millennium.complement, not_not]
+    exact Iff.rfl
+  have hlenwb : ∀ (w : List α) (b : List β), ((Millennium.pair_encoding (Millennium.fin_encoding_string α)
+      (Millennium.fin_encoding_string β)).encode (w, b)).length = w.length + 1 + b.length := by
+    intro w b; rw [Millennium.pair_encoding.length_eq]; rfl
+  have hlenwW : ∀ (w : List α) (W : List Bool), ((Millennium.pair_encoding (Millennium.fin_encoding_string α)
+      (Millennium.fin_encoding_string Bool)).encode (w, W)).length = w.length + 1 + W.length := by
+    intro w W; rw [Millennium.pair_encoding.length_eq]; rfl
+  -- soundness, for both cases
+  have hsound : ∀ (w : List α) (W : List Bool),
+      (∀ b : List β, b.length ≤ p.eval (w.length + 1 + W.length) → D ((w, W), b)) → L w := by
+    intro w W hall
+    by_contra hLw
+    obtain ⟨b, hb, hL'b⟩ := (hp w).1 hLw
+    have hb' : b.length ≤ p.eval w.length := hb
+    have hmono : p.eval w.length ≤ p.eval (w.length + 1 + W.length) :=
+      Pnp.TM2Proj.polynomial_eval_mono _ (by omega)
+    rcases (hDs w W b).1 (hall b (hb'.trans hmono)) with h | ⟨t, ht, hL''t⟩
+    · omega
+    · refine (hq (w, b)).2 ⟨_, ?_, hL''t⟩ hL'b
+      rw [hlenwb]
+      refine (length_filterMap_le _ _).trans ?_
+      rw [length_ic]
+      by_cases hγ : Nonempty γ
+      · rw [hQ, if_pos hγ] at ht; exact ht
+      · rw [hQ, if_neg hγ, Polynomial.eval_zero] at ht; omega
+  by_cases hγ : Nonempty γ
+  · -- the main case: dense witness codes
+    obtain ⟨r, hr⟩ := dense_search hT L'' hL'' q
+    choose G hGl hG using hr
+    let pW : Polynomial ℕ := (p + 1) * (2 * r.comp (Polynomial.X + p) + 2)
+    refine Pnp.Derand.sigma2_intro (Millennium.fin_encoding_string α) L Bool β D hD pW p
+      (fun w => ⟨fun hLw => ?_, fun ⟨W, _, hall⟩ => hsound w W (by rwa [hlenwW] at hall)⟩)
+    set n := w.length
+    let Gs : List Str := (List.range (p.eval n + 1)).map (G n)
+    refine ⟨Wenc Gs, ?_, fun b hb => ?_⟩
+    · -- the witness length
+      have hGs : ∀ g ∈ Gs, g.length ≤ r.eval (n + p.eval n) := by
+        intro g hg
+        obtain ⟨m, hm, rfl⟩ := List.mem_map.1 hg
+        rw [List.mem_range] at hm
+        exact (hGl n m).trans (Pnp.TM2Proj.polynomial_eval_mono _ (by omega))
+      refine (length_Wenc Gs _ hGs).trans (le_of_eq ?_)
+      simp [pW, Gs, Polynomial.eval_comp, n]
+      rfl
+    · rw [hDs]
+      by_cases hbm : p.eval n < b.length
+      · exact Or.inl hbm
+      right
+      have hL'b : ¬ L' (w, b) := fun h => (hp w).2 ⟨b, Nat.le_of_not_lt hbm, h⟩ hLw
+      obtain ⟨c, hc, hcL⟩ := (hq (w, b)).1 hL'b
+      rw [hlenwb] at hc
+      have hsel : (seg (segIt (Wenc Gs) b.length)).1 = G n b.length := by
+        rw [sel_Wenc Gs b.length (by simp [Gs]; omega)]
+        simp [Gs]
+      obtain ⟨m', hm', hm'L⟩ := hG n b.length w b rfl rfl ⟨c, hc, hcL⟩
+      refine ⟨m', ?_, ?_⟩
+      · rw [hQ, if_pos hγ]; exact hm'
+      · rw [hsel]
+        have hdC : π.dC = Fintype.equivFin γ (Classical.arbitrary γ) := by
+          simp [hπdef, mkPar, dif_pos hγ]
+        rw [hdC, ic_filterMap _ _ _ hm']
+        exact hm'L
+  · -- no certificate symbols: the certificate is empty
+    refine Pnp.Derand.sigma2_intro (Millennium.fin_encoding_string α) L Bool β D hD 0 p
+      (fun w => ⟨fun hLw => ⟨[], by simp, fun b hb => ?_⟩,
+        fun ⟨W, _, hall⟩ => hsound w W (by rwa [hlenwW] at hall)⟩)
+    rw [hDs]
+    by_cases hbm : p.eval w.length < b.length
+    · exact Or.inl hbm
+    right
+    have hL'b : ¬ L' (w, b) := fun h => (hp w).2 ⟨b, Nat.le_of_not_lt hbm, h⟩ hLw
+    obtain ⟨c, -, hcL⟩ := (hq (w, b)).1 hL'b
+    have hc : c = [] := by
+      cases c with
+      | nil => rfl
+      | cons g _ => exact absurd ⟨g⟩ hγ
+    refine ⟨0, Nat.zero_le _, ?_⟩
+    simp only [DP.ic, List.range_zero, List.map_nil, List.filterMap_nil]
+    rw [← hc]; exact hcL
 
 end
 
