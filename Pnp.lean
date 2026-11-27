@@ -67,3 +67,4 @@ import Pnp.Oracle.StructLib
 import Pnp.Derandomization.BPPSigma2
 import Pnp.CookLevin.SAT
 import Pnp.CookLevin.Tseitin
+import Pnp.CookLevin.CircuitForm
