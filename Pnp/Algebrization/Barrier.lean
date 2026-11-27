@@ -21,7 +21,10 @@ oracles of `Pnp.Algebrization.Extension`:
 Hence (`algebrization_barrier`) any proof of `P ≠ NP` or of `P = NP` must use
 techniques that do not algebrize.
 
-Caveats: the theorems are about our oracle model (prime fields only, our query
+Extensions range over all finite fields (`Fld q`, every finite field up to isomorphism,
+see `exists_ringEquiv_Fld` and `IsExtension.exists_poly`).
+
+Caveats: the theorems are about our oracle model (our query and field-element
 encoding); the model is not formally proved equivalent to the upstream unrelativized
 classes, and "a proof technique algebrizes" is a meta-level notion that is not itself
 formalized.
@@ -55,7 +58,7 @@ theorem algebrization_barrier : ¬ SeparationAlgebrizes ∧ ¬ InclusionAlgebriz
 /-- Sanity check: the zero polynomials form a (multiquadratic) extension of the empty
 oracle, so `IsExtension` is satisfiable. -/
 theorem isExtension_empty : IsExtension ∅ (fun _ _ => 0) := by
-  intro p _ m
+  intro p m
   refine ⟨fun i => by simp, fun z => by simp⟩
 
 end Pnp.Algebrize
