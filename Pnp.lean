@@ -169,3 +169,15 @@ import Pnp.Karp.ThreeDMNP
 import Pnp.Karp.X3CVer
 import Pnp.Karp.X3CNP
 import Pnp.Karp.ThreeDMNPC
+import Pnp.Karp.SetCover
+import Pnp.Karp.SetCoverRed
+import Pnp.Karp.SetCoverProg
+import Pnp.Karp.SetCoverVer
+import Pnp.Karp.SetCoverNP
+import Pnp.Karp.SetCoverNPC
+import Pnp.Karp.HittingSet
+import Pnp.Karp.HittingSetRed
+import Pnp.Karp.HittingSetProg
+import Pnp.Karp.HittingSetVer
+import Pnp.Karp.HittingSetNP
+import Pnp.Karp.HittingSetNPC
