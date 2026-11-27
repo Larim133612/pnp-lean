@@ -43,6 +43,7 @@ import Pnp.Algebrization.Diagonal
 import Pnp.Algebrization.Barrier
 import Pnp.Oracle.FromTM2
 import Pnp.Oracle.OfficialP
+import Pnp.Oracle.OfficialCode
 import Pnp.Oracle.Shift
 import Pnp.Oracle.FromNP
 import Pnp.Oracle.NPEquiv
