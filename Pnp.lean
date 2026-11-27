@@ -55,6 +55,7 @@ import Pnp.NaturalProofs.BlumMicali
 import Pnp.Derandomization.NisanWigderson
 import Pnp.Derandomization.HardFunctions
 import Pnp.Derandomization.Adleman
+import Pnp.Derandomization.Hardcore
 import Pnp.Derandomization.BPP
 import Pnp.Derandomization.Lautemann
 import Pnp.Derandomization.ValiantVazirani
