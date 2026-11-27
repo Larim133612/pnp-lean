@@ -50,3 +50,4 @@ import Pnp.NaturalProofs.GGM
 import Pnp.NaturalProofs.GoldreichLevin
 import Pnp.NaturalProofs.BMCircuits
 import Pnp.NaturalProofs.BlumMicali
+import Pnp.Derandomization.NisanWigderson
