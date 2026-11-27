@@ -102,6 +102,7 @@ no `sorry` and depends only on Lean's standard axioms
 - [x] M24 official `P ⊆ NP` without the composition hypothesis (`p_subset_np`, hand-built projection-then-decide TM2 machine) and official `P ⊆ BPP` (`inBPP_of_inPolynomialTime`)
 - [x] M25 polynomial-time `TM2` computability is closed under composition (`comp`), so every upstream result conditional on `PolynomialTimeComputableComposition` holds unconditionally
 - [x] M26 official `BPP ⊆ Σ₂ᴾ` over `Bool` (`bpp_subset_sigma2`): Sipser–Gács–Lautemann with amplification, the inner predicate decided by a stack program written in a small structured language (`Pnp/Oracle/Struct.lean`), transferred to the official nested pair encoding by a symbol-wise homomorphism TM2 machine (`inPolynomialTime_of_code`)
+- [x] M27 SAT ∈ NP for the official class (`Pnp.CookLevin.sat_in_np`): dense CNF formulas over `{pos, neg, zero, sep}` (`SATLang`, clause form `clauses_sat_iff`), verified by a structured stack program in time `(n+2)^4` on all inputs; first half of Cook–Levin
 - [x] M11 Connect the oracle model to the official classes
   - [x] M11a `P ∅ ⊆ P` (official, alphabet `Bool`)
   - [x] M11b `NP ∅ ⊆ NP` (official)
