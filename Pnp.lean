@@ -129,3 +129,15 @@ import Pnp.Karp.SubNP
 import Pnp.Karp.SubGen
 import Pnp.Karp.SubProg
 import Pnp.Karp.SubsetSumNPC
+import Pnp.Karp.Partition
+import Pnp.Karp.PartRed
+import Pnp.Karp.PartVer
+import Pnp.Karp.PartNP
+import Pnp.Karp.PartProg
+import Pnp.Karp.PartitionNPC
+import Pnp.Karp.Knapsack
+import Pnp.Karp.KnapRed
+import Pnp.Karp.KnapVer
+import Pnp.Karp.KnapNP
+import Pnp.Karp.KnapProg
+import Pnp.Karp.KnapsackNPC
