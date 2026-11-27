@@ -55,3 +55,4 @@ import Pnp.Derandomization.HardFunctions
 import Pnp.Derandomization.Adleman
 import Pnp.Derandomization.BPP
 import Pnp.Derandomization.Lautemann
+import Pnp.Derandomization.ValiantVazirani
