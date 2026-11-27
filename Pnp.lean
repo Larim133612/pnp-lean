@@ -52,3 +52,4 @@ import Pnp.NaturalProofs.BMCircuits
 import Pnp.NaturalProofs.BlumMicali
 import Pnp.Derandomization.NisanWigderson
 import Pnp.Derandomization.HardFunctions
+import Pnp.Derandomization.Adleman

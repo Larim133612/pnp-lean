@@ -62,6 +62,7 @@ jobs:
           #print axioms Pnp.Derand.nw_poly_secure
           #print axioms Pnp.Derand.exists_avgHard_explicit
           #print axioms Pnp.Derand.exists_nw_secure
+          #print axioms Pnp.Derand.adleman
           #print axioms Pnp.PPoly.simulate
           #print axioms Pnp.PPoly.inPPoly_of_inPolynomialTime
           #print axioms Pnp.PPoly.ppoly_of_clayPVersusNP
