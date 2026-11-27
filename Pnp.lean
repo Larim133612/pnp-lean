@@ -121,3 +121,11 @@ import Pnp.Karp.HamGen
 import Pnp.Karp.HamVer
 import Pnp.Karp.HamNP
 import Pnp.Karp.HamNPC
+import Pnp.Karp.SubsetSum
+import Pnp.Karp.SubArith
+import Pnp.Karp.SubComb
+import Pnp.Karp.SubVer
+import Pnp.Karp.SubNP
+import Pnp.Karp.SubGen
+import Pnp.Karp.SubProg
+import Pnp.Karp.SubsetSumNPC
