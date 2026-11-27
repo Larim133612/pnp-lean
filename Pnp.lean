@@ -113,3 +113,11 @@ import Pnp.Karp.ColorNP
 import Pnp.Karp.ColorGen
 import Pnp.Karp.ColorProg
 import Pnp.Karp.ColorNPC
+import Pnp.Karp.Ham
+import Pnp.Karp.HamFwd
+import Pnp.Karp.HamBwd
+import Pnp.Karp.HamProg
+import Pnp.Karp.HamGen
+import Pnp.Karp.HamVer
+import Pnp.Karp.HamNP
+import Pnp.Karp.HamNPC
