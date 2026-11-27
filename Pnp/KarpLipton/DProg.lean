@@ -1,5 +1,7 @@
 import Pnp.KarpLipton.DTab
 import Pnp.Oracle.Horner
+import Pnp.Oracle.OfficialP
+import Pnp.TM2.Projection
 
 /-!
 # The program for the inner predicate of the Karp–Lipton `Σ₂` form (M32e, part 2)
@@ -891,6 +893,107 @@ theorem exec_prog (π : Par) (hπ : π.Ok) (K : ℕ) (ans : List ℕ → List �
     rw [e1, e3, show nS π z = N from rfl, ← hPP, show tb K (PP.length + N * π.BC) = T from rfl]
     generalize Cit π N PP.length T = CC
     omega
+
+/-! ## A polynomial bound on the cost -/
+
+open Polynomial in
+/-- A polynomial majorant of the cost (`Cp, Ep, CQ, EQ` bound the Horner costs). -/
+def Fp (π : Par) (K Cp Ep CQ EQ : ℕ) : Polynomial ℕ :=
+  (X * C (2 * π.kA + π.BA + 2 * π.kB + π.BB + 20) + 20) +
+  (5 * X + 4 + C Cp * (X + 2) ^ Ep + (8 * X + 6) + (2 * π.p + 2) + 1 + (5 * X + 4) +
+    C CQ * (2 * X + 3) ^ EQ + (2 * π.Q.comp (2 * X + 1) + 2)) +
+  (C (π.sC.length + π.sWB.length + π.bS.length) +
+    2 * (X * C π.BB + X * C π.BA + X * C π.BB + X * C π.BA) + 11) +
+  (5 * X + 4 + (X * (2 * X + 4) + 2) + (4 * X + 5)) +
+  ((X + 1) * (2 * ((X * C π.BA + C π.bS.length + X * C π.BB) + X) + 40) +
+    2 * ((X * C π.BA + C π.bS.length + X * C π.BB) + X) + 20 +
+    (2 * ((X * C π.BA + C π.bS.length + X * C π.BB) + X) + 2)) +
+  (π.Q.comp (2 * X + 1) + 1) * (7 * (π.Q.comp (2 * X + 1) * C π.BC) +
+    5 * (X * C π.BA + C π.sWB.length + X * C π.BB + C π.sC.length) +
+    2 * ((X * C π.BA + C π.sWB.length + X * C π.BB + C π.sC.length) +
+      π.Q.comp (2 * X + 1) * C π.BC) +
+    3 * ((X * C π.BA + C π.sWB.length + X * C π.BB + C π.sC.length) +
+      π.Q.comp (2 * X + 1) * C π.BC + 2) ^ K +
+    C (2 * (Official.nW π.q + 2) + 2 * π.kC + π.BC + 30))
+
+theorem Tprog_le (π : Par) (hπ : π.Ok) (K Cp Ep CQ EQ : ℕ)
+    (hCp : ∀ X, polyT π.p X ≤ Cp * (X + 2) ^ Ep) (hCQ : ∀ X, polyT π.Q X ≤ CQ * (X + 2) ^ EQ)
+    (z : Str) : Tprog π K z ≤ (Fp π K Cp Ep CQ EQ).eval z.length := by
+  have l1 := sl_length π.kA π.dA z
+  have l2 := seg_length (r1 π z).2
+  have l3 := sl_length π.kB π.dB (r2 π z).2
+  have hn : (r1 π z).1.length ≤ z.length := by simp only [r1] at *; omega
+  have hm : (r3 π z).1.length ≤ z.length := by simp only [r3, r2, r1] at *; omega
+  have hBA : ∀ j, (π.SA j).length ≤ π.BA := fun j => by have := hπ.hA j; omega
+  have hBB : ∀ j, (π.SB j).length ≤ π.BB := fun j => by have := hπ.hB j; omega
+  have hTA : ∀ j, (π.TA j).length ≤ π.BA := fun j => by have := hπ.hA j; omega
+  have hTB : ∀ j, (π.TB j).length ≤ π.BB := fun j => by have := hπ.hB j; omega
+  have hN : nS π z ≤ π.Q.eval (2 * z.length + 1) := by
+    unfold nS; exact Pnp.TM2Proj.polynomial_eval_mono _ (by omega)
+  have hV : (vS π z).length ≤ z.length * π.BA + π.bS.length + z.length * π.BB := by
+    have a1 := flatMap_length_le hTA (r1 π z).1.reverse
+    have a2 := flatMap_length_le hTB (r3 π z).1.reverse
+    simp only [List.length_reverse] at a1 a2
+    have := Nat.mul_le_mul_right π.BA hn; have := Nat.mul_le_mul_right π.BB hm
+    simp only [vS, List.length_append, List.length_reverse]; omega
+  have hP : (ppS π z).length ≤ z.length * π.BA + π.sWB.length + z.length * π.BB + π.sC.length := by
+    have a1 := flatMap_length_le hBA (r1 π z).1.reverse
+    have a2 := flatMap_length_le hBB (r3 π z).1.reverse
+    simp only [List.length_reverse] at a1 a2
+    have := Nat.mul_le_mul_right π.BA hn; have := Nat.mul_le_mul_right π.BB hm
+    simp only [ppS, List.length_append, List.length_reverse]; omega
+  have hTar : Tar π (r1 π z).1.length (r3 π z).1.length ≤ 5 * z.length + 4 + Cp * (z.length + 2) ^ Ep + (8 * z.length + 6) + (2 * π.p.eval z.length + 2) + 1 +
+      (5 * z.length + 4) + CQ * (2 * z.length + 3) ^ EQ + (2 * π.Q.eval (2 * z.length + 1) + 2) := by
+    have a1 := (hCp (r1 π z).1.length).trans (Nat.mul_le_mul_left Cp
+      (Nat.pow_le_pow_left (show (r1 π z).1.length + 2 ≤ z.length + 2 by omega) Ep))
+    have a2 := (hCQ ((r3 π z).1.length + 1 + (r1 π z).1.length)).trans (Nat.mul_le_mul_left CQ
+      (Nat.pow_le_pow_left (show (r3 π z).1.length + 1 + (r1 π z).1.length + 2 ≤ 2 * z.length + 3 by omega) EQ))
+    have a3 : π.p.eval (r1 π z).1.length ≤ π.p.eval z.length := Pnp.TM2Proj.polynomial_eval_mono _ hn
+    have a4 : π.Q.eval ((r3 π z).1.length + 1 + (r1 π z).1.length) ≤ π.Q.eval (2 * z.length + 1) :=
+      Pnp.TM2Proj.polynomial_eval_mono _ (by omega)
+    unfold Tar; omega
+  have h5 : (z.length + 1) * (2 * ((vS π z).length + z.length) + 40) ≤
+      (z.length + 1) * (2 * ((z.length * π.BA + π.bS.length + z.length * π.BB) + z.length) + 40) :=
+    Nat.mul_le_mul_left _ (by omega)
+  have h6 : (nS π z + 1) * Cit π (nS π z) (ppS π z).length
+      (tb K ((ppS π z).length + nS π z * π.BC)) ≤
+      (π.Q.eval (2 * z.length + 1) + 1) * (7 * (π.Q.eval (2 * z.length + 1) * π.BC) +
+        5 * (z.length * π.BA + π.sWB.length + z.length * π.BB + π.sC.length) +
+        2 * ((z.length * π.BA + π.sWB.length + z.length * π.BB + π.sC.length) + π.Q.eval (2 * z.length + 1) * π.BC) +
+        3 * ((z.length * π.BA + π.sWB.length + z.length * π.BB + π.sC.length) +
+          π.Q.eval (2 * z.length + 1) * π.BC + 2) ^ K +
+        (2 * (Official.nW π.q + 2) + 2 * π.kC + π.BC + 30)) := by
+    have hNB := Nat.mul_le_mul_right π.BC hN
+    have hT : tb K ((ppS π z).length + nS π z * π.BC) ≤
+        ((z.length * π.BA + π.sWB.length + z.length * π.BB + π.sC.length) +
+          π.Q.eval (2 * z.length + 1) * π.BC + 2) ^ K := by
+      unfold tb; exact Nat.pow_le_pow_left (by omega) K
+    unfold Cit
+    exact Nat.mul_le_mul (by omega) (by omega)
+  unfold Tprog Fp
+  simp only [Polynomial.eval_add, Polynomial.eval_mul, Polynomial.eval_pow, Polynomial.eval_C,
+    Polynomial.eval_X, Polynomial.eval_comp, Polynomial.eval_ofNat, Polynomial.eval_one]
+  omega
+
+/-- **The cost is polynomial.** -/
+theorem tprog_poly (π : Par) (hπ : π.Ok) (K : ℕ) : ∃ E, ∀ z : Str, Tprog π K z ≤ tb E z.length := by
+  obtain ⟨Cp, Ep, hCp⟩ := polyT_le π.p
+  obtain ⟨CQ, EQ, hCQ⟩ := polyT_le π.Q
+  obtain ⟨c, d, hcd⟩ := Pnp.Relativize.OfficialP.eval_le (Fp π K Cp Ep CQ EQ)
+  refine ⟨c + 0 + d, fun z => ?_⟩
+  have := (Tprog_le π hπ K Cp Ep CQ EQ hCp hCQ z).trans (hcd _)
+  have h2 := Pnp.Relativize.OfficialP.absorb c 0 d z.length
+  unfold tb; omega
+
+open scoped Classical in
+/-- **The computed predicate is in our class `P ∅`.** -/
+theorem dsem_mem_P (π : Par) (hπ : π.Ok) (K : ℕ) (ans : List ℕ → List ℕ → List ℕ → Bool)
+    (hq : ∀ iw ib ic : List ℕ, runFor ∅ π.q (tb K (xc π iw ib ic).length)
+      (.run (init [xc π iw ib ic])) = .done (ans iw ib ic)) :
+    {z | Dsem π ans z} ∈ P ∅ := by
+  obtain ⟨E, hE⟩ := tprog_poly π hπ K
+  refine ⟨toProg (prog π), E, fun z => ⟨decide (Dsem π ans z), ?_, by simp⟩⟩
+  exact ((exec_prog π hπ K ans hq z).mono (hE z)).runFor_toProg
 
 end
 
