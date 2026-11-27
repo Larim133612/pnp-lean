@@ -251,3 +251,13 @@ import Pnp.Karp.JobSeqProg
 import Pnp.Karp.JobSeqVer
 import Pnp.Karp.JobSeqNP
 import Pnp.Karp.JobSeqNPC
+import Pnp.Karp.NAE
+import Pnp.Karp.NAERed
+import Pnp.Karp.NAEProg
+import Pnp.Karp.NAENP
+import Pnp.Karp.NAENPC
+import Pnp.Karp.M2Red
+import Pnp.Karp.M2Prog
+import Pnp.Karp.M2Ver
+import Pnp.Karp.M2NP
+import Pnp.Karp.M2NPC
