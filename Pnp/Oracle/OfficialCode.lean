@@ -11,8 +11,10 @@ truncated-unary code `FromTM2.code` of the input symbols, so the program decides
 `(e.encode t).flatMap c` of the official input.
 
 * `decide_of_inPolynomialTime`: for every official `InPolynomialTime e L` (any `FinEncoding e`)
-  there are a program `q`, a code `c : e.Γ → Str` of nonempty words and an exponent `K` with
-  `runFor ∅ q (tb K |x|) (init [x]) = done (decide (L t))` for `x = (e.encode t).flatMap c`.
+  there are a program `q`, a number `Nc ≥ 2`, an injective index `ix : e.Γ → ℕ` below `Nc` and
+  an exponent `K` with `runFor ∅ q (tb K |x|) (init [x]) = done (decide (L t))` for
+  `x = (e.encode t).flatMap c`, where `c g = tu Nc (ix g)` is the truncated-unary code
+  `false^(ix g) true` (without the final `true` for the last index `Nc - 1`).
 
 This lets official polynomial-time predicates over pair encodings with arbitrary alphabets be used
 as subroutines (`Struct.Cmd.call`) of our own programs.
@@ -26,9 +28,11 @@ open Classical in
 /-- **Official `P` (any finite alphabet) ⊆ our programs on bit codes.** -/
 theorem decide_of_inPolynomialTime {T : Type} (e : Computability.FinEncoding T)
     {L : Millennium.Language T} (h : Millennium.InPolynomialTime e L) :
-    ∃ (q : Prog) (c : e.Γ → Str) (K : ℕ), (∀ g, c g ≠ []) ∧ ∀ t : T,
-      runFor ∅ q (tb K ((e.encode t).flatMap c).length)
-        (.run (init [(e.encode t).flatMap c])) = .done (decide (L t)) := by
+    ∃ (q : Prog) (Nc : ℕ) (ix : e.Γ → ℕ) (K : ℕ), 2 ≤ Nc ∧ Function.Injective ix ∧
+      (∀ g, ix g < Nc) ∧ ∀ t : T,
+      runFor ∅ q (tb K ((e.encode t).flatMap fun g => FromTM2.tu Nc (ix g)).length)
+        (.run (init [(e.encode t).flatMap fun g => FromTM2.tu Nc (ix g)])) =
+          .done (decide (L t)) := by
   classical
   obtain ⟨f, comp, hf⟩ := h
   let tm := comp.tm
@@ -45,7 +49,17 @@ theorem decide_of_inPolynomialTime {T : Type} (e : Computability.FinEncoding T)
   obtain ⟨cc, d, hcd⟩ := OfficialP.eval_le comp.time
   let a := cc * (Dm tm * B tm ly)
   let b := N tm ly tm.k₁ + 3
-  refine ⟨prog tm ly e₁, c, a + b + d, hc, fun t => ?_⟩
+  have hmem : ∀ g, e₀.symm g ∈ FromTM2.L tm ly tm.k₀ := fun g => by simp [FromTM2.L, ly]
+  refine ⟨prog tm ly e₁, N tm ly tm.k₀, fun g => FromTM2.ix tm ly tm.k₀ (e₀.symm g), a + b + d,
+    two_le_N tm ly tm.k₀, fun g g' hgg => ?_, fun g => ?_, fun t => ?_⟩
+  · have h1 := List.getElem?_idxOf (hmem g)
+    have h2 := List.getElem?_idxOf (hmem g')
+    simp only [FromTM2.ix] at hgg
+    rw [hgg, h2] at h1
+    exact e₀.symm.injective (Option.some.inj h1).symm
+  · exact lt_of_lt_of_le (List.idxOf_lt_length_of_mem (hmem g)) (le_max_right _ _)
+  show runFor ∅ (prog tm ly e₁) (tb (a + b + d) ((e.encode t).flatMap c).length)
+    (.run (init [(e.encode t).flatMap c])) = .done (decide (L t))
   set w := e.encode t with hw
   set x := w.flatMap c with hx
   have hlen : w.length ≤ x.length := by

@@ -75,3 +75,4 @@ import Pnp.KarpLipton.Verifier
 import Pnp.KarpLipton.KarpLipton
 import Pnp.KarpLipton.Equiv
 import Pnp.KarpLipton.EvalCmd
+import Pnp.KarpLipton.DenseWitness
