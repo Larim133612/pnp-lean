@@ -724,6 +724,174 @@ theorem exec_mLoop (π : Par) (hπ : π.Ok) (m0 : Mem) (X PP : Str) (N T : ℕ) 
         simp only [Cit]
         omega
 
+/-! ## The whole program -/
+
+section Whole
+
+variable (π : Par)
+
+/-- The code of a call input: prefix codes of `iw`, `ib`, the separators and the codes of `ic`. -/
+def xc (iw ib ic : List ℕ) : Str :=
+  (iw.reverse.flatMap π.SA).reverse ++ π.sWB ++ (ib.reverse.flatMap π.SB).reverse ++ π.sC ++
+    (ic.reverse.flatMap π.SC).reverse
+
+/-- The prefix code. -/
+def ppS (z : Str) : Str :=
+  (((r1 π z).1.reverse.flatMap π.SA).reverse ++ π.sWB ++ ((r3 π z).1.reverse.flatMap π.SB).reverse ++
+    π.sC)
+
+/-- The wire values. -/
+def vS (z : Str) : Str :=
+  ((r1 π z).1.reverse.flatMap π.TA).reverse ++ π.bS ++ ((r3 π z).1.reverse.flatMap π.TB).reverse
+
+/-- The selected circuit code. -/
+def gS (z : Str) : Str := (seg (segIt (r2 π z).1 (r3 π z).1.length)).1
+
+/-- The reversed circuit output. -/
+def xS (z : Str) : Str := (evalD (gS π z) (vS π z) [] false false).reverse
+
+/-- The loop count. -/
+def nS (z : Str) : ℕ := π.Q.eval ((r3 π z).1.length + 1 + (r1 π z).1.length)
+
+/-- **The computed predicate.** -/
+def Dsem (ans : List ℕ → List ℕ → List ℕ → Bool) (z : Str) : Prop :=
+  π.p.eval (r1 π z).1.length < (r3 π z).1.length ∨
+    ∃ t ≤ nS π z, ans (r1 π z).1 (r3 π z).1 (ic π.kC π.dC (xS π z) t) = false
+
+/-- The cost of the whole program. -/
+def Tprog (K : ℕ) (z : Str) : ℕ :=
+  (z.length * (2 * π.kA + π.BA + 2 * π.kB + π.BB + 20) + 20) +
+    Tar π (r1 π z).1.length (r3 π z).1.length +
+    (π.sC.length + π.sWB.length + π.bS.length +
+      2 * (z.length * π.BB + z.length * π.BA + z.length * π.BB + z.length * π.BA) + 11) +
+    (5 * z.length + 4 + (z.length * (2 * z.length + 4) + 2) + (4 * z.length + 5)) +
+    ((z.length + 1) * (2 * ((vS π z).length + z.length) + 40) + 2 * ((vS π z).length + z.length) + 20 +
+      (2 * ((vS π z).length + z.length) + 2)) +
+    (nS π z + 1) * Cit π (nS π z) (ppS π z).length
+      (tb K ((ppS π z).length + nS π z * π.BC))
+
+end Whole
+
+theorem init_two (x : Str) : init [x, []] = init [x] := by
+  unfold init; congr 1; funext k; rcases k with _ | _ | k <;> rfl
+
+open scoped Classical in
+/-- **The whole program**: on every input it halts with the answer `Dsem`. -/
+theorem exec_prog (π : Par) (hπ : π.Ok) (K : ℕ) (ans : List ℕ → List ℕ → List ℕ → Bool)
+    (hq : ∀ iw ib ic : List ℕ, runFor ∅ π.q (tb K (xc π iw ib ic).length)
+      (.run (init [xc π iw ib ic])) = .done (ans iw ib ic)) (z : Str) :
+    ExecLe (prog π) (init [z]).stk (.halt (decide (Dsem π ans z))) (Tprog π K z) := by
+  set iw := (r1 π z).1
+  set W := (r2 π z).1
+  set ib := (r3 π z).1
+  set n := iw.length
+  set m := ib.length
+  have l1 := sl_length π.kA π.dA z
+  have l2 := seg_length (r1 π z).2
+  have l3 := sl_length π.kB π.dB (r2 π z).2
+  have hn : n ≤ z.length := by simp only [n, iw, r1] at *; omega
+  have hW : W.length ≤ z.length := by simp only [W, r2, r1] at *; omega
+  have hm : m ≤ z.length := by simp only [m, ib, r3, r2, r1] at *; omega
+  have hp := exec_parse π hπ z
+  set mP : Mem := {Mem.e with
+    z := (r3 π z).2,
+    pw := iw.reverse.flatMap π.SA, vw := iw.reverse.flatMap π.TA,
+    nn := List.replicate n true,
+    pb := ib.reverse.flatMap π.SB, vb := ib.reverse.flatMap π.TB,
+    mm := List.replicate m true, ws := W} with hmP
+  have ha := exec_arith π mP n m rfl rfl rfl rfl rfl rfl rfl rfl rfl
+  rw [init_eq]
+  by_cases hpm : π.p.eval n < m
+  · refine (hp.seq_norm (ha.1 hpm).seq_halt).cast ?_ ?_
+    · congr 1; exact (decide_eq_true (show Dsem π ans z from Or.inl hpm)).symm
+    · unfold Tprog
+      have e1 : (r1 π z).1.length = n := rfl
+      have e3 : (r3 π z).1.length = m := rfl
+      rw [e1, e3]
+      omega
+  have ha' := ha.2 (by omega)
+  set N := π.Q.eval (m + 1 + n)
+  set mA := {mP with xs := List.replicate (m + 1 + n) true, cnt := List.replicate N true}
+  have hb := exec_build π mA rfl rfl
+  set mB := {mA with
+      pw := [], pb := [], vw := [], vb := [],
+      pp := mA.pw.reverse ++ π.sWB ++ mA.pb.reverse ++ π.sC,
+      v := mA.vw.reverse ++ π.bS ++ mA.vb.reverse}
+  have hs := exec_sel mB m W rfl rfl rfl rfl rfl rfl rfl
+  set mS := {mB with ws := (seg (segIt W m)).2, jk := segJ W m, g := (seg (segIt W m)).1}
+  have he := exec_ev mS (seg (segIt W m)).1 (mA.vw.reverse ++ π.bS ++ mA.vb.reverse) rfl rfl rfl
+    rfl rfl rfl
+  set mE := {mS with
+    g := [], v := [],
+    xx := (evalD (seg (segIt W m)).1 (mA.vw.reverse ++ π.bS ++ mA.vb.reverse) [] false false).reverse}
+  set PP := mA.pw.reverse ++ π.sWB ++ mA.pb.reverse ++ π.sC
+  set X := (evalD (seg (segIt W m)).1 (mA.vw.reverse ++ π.bS ++ mA.vb.reverse) [] false false).reverse
+  have hBA : ∀ j, (π.SA j).length ≤ π.BA := fun j => by have := hπ.hA j; omega
+  have hBB : ∀ j, (π.SB j).length ≤ π.BB := fun j => by have := hπ.hB j; omega
+  have hTA : ∀ j, (π.TA j).length ≤ π.BA := fun j => by have := hπ.hA j; omega
+  have hTB : ∀ j, (π.TB j).length ≤ π.BB := fun j => by have := hπ.hB j; omega
+  have hBC : ∀ j, (π.SC j).length ≤ π.BC := fun j => by have := hπ.hC j; simpa using this
+  have hPP : PP = ppS π z := rfl
+  set T := tb K (PP.length + N * π.BC)
+  have hq' : ∀ t ≤ N, runFor ∅ π.q T
+      (.run ⟨0, (init [PP ++ ((ic π.kC π.dC X t).reverse.flatMap π.SC).reverse, []]).stk⟩) =
+        .done (ans iw ib (ic π.kC π.dC X t)) := by
+    intro t ht
+    have h := hq iw ib (ic π.kC π.dC X t)
+    have e : xc π iw ib (ic π.kC π.dC X t) = PP ++ ((ic π.kC π.dC X t).reverse.flatMap π.SC).reverse := by
+      simp [xc, PP, mA, mP]
+    rw [e] at h
+    rw [show (⟨0, (init [PP ++ ((ic π.kC π.dC X t).reverse.flatMap π.SC).reverse, []]).stk⟩ : Cfg) =
+      init [PP ++ ((ic π.kC π.dC X t).reverse.flatMap π.SC).reverse] by rw [init_two]; rfl]
+    refine runFor_mono h ?_
+    unfold T tb
+    refine Nat.pow_le_pow_left ?_ _
+    have := flatMap_length_le hBC (ic π.kC π.dC X t).reverse
+    rw [List.length_reverse, length_ic] at this
+    have := Nat.mul_le_mul_right π.BC ht
+    simp only [List.length_append, List.length_reverse]
+    omega
+  have hl := exec_mLoop π hπ mE X PP N T (fun t => ans iw ib (ic π.kC π.dC X t)) rfl rfl rfl rfl rfl
+    rfl hq' N 0 (by omega) (by omega)
+  have e0 : mSt π mE N X 0 = mE := by simp [mSt, mE, mS, mB, mA, mP, Mem.e, ic, X]
+  rw [e0] at hl
+  refine (hp.seq_norm (ha'.seq_norm (hb.seq_norm (hs.seq_norm (he.seq_norm hl))))).cast ?_ ?_
+  · congr 1
+    apply decide_eq_decide.2
+    constructor
+    · rintro ⟨t', -, h2, h3⟩; exact Or.inr ⟨t', h2, h3⟩
+    · rintro (h | ⟨t', h2, h3⟩)
+      · exact absurd h hpm
+      · exact ⟨t', Nat.zero_le _, h2, h3⟩
+  · -- the cost
+    have hVl : (mA.vw.reverse ++ π.bS ++ mA.vb.reverse).length = (vS π z).length := rfl
+    have hpwl : mA.pw.length ≤ z.length * π.BA := by
+      have := flatMap_length_le hBA iw.reverse; simp only [List.length_reverse] at this
+      exact this.trans (Nat.mul_le_mul_right _ hn)
+    have hpbl : mA.pb.length ≤ z.length * π.BB := by
+      have := flatMap_length_le hBB ib.reverse; simp only [List.length_reverse] at this
+      exact this.trans (Nat.mul_le_mul_right _ hm)
+    have hvwl : mA.vw.length ≤ z.length * π.BA := by
+      have := flatMap_length_le hTA iw.reverse; simp only [List.length_reverse] at this
+      exact this.trans (Nat.mul_le_mul_right _ hn)
+    have hvbl : mA.vb.length ≤ z.length * π.BB := by
+      have := flatMap_length_le hTB ib.reverse; simp only [List.length_reverse] at this
+      exact this.trans (Nat.mul_le_mul_right _ hm)
+    have hGl : (seg (segIt W m)).1.length ≤ z.length := by
+      have := seg_length (segIt W m); have := segIt_length W m; omega
+    have hm1 : m * (2 * W.length + 4) ≤ z.length * (2 * z.length + 4) :=
+      Nat.mul_le_mul hm (by omega)
+    have hev : ((seg (segIt W m)).1.length + 1) * (2 * ((vS π z).length +
+        (seg (segIt W m)).1.length) + 40) ≤ (z.length + 1) * (2 * ((vS π z).length + z.length) + 40) :=
+      Nat.mul_le_mul (by omega) (by omega)
+    rw [hVl, Nat.sub_zero]
+    unfold Tprog
+    have e1 : (r1 π z).1.length = n := rfl
+    have e3 : (r3 π z).1.length = m := rfl
+    rw [e1, e3, show nS π z = N from rfl, ← hPP, show tb K (PP.length + N * π.BC) = T from rfl]
+    generalize Cit π N PP.length T = CC
+    omega
+
 end
 
 end Pnp.KarpLipton.DP
