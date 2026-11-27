@@ -239,3 +239,15 @@ import Pnp.Karp.FeedbackArcProg
 import Pnp.Karp.FeedbackArcVer
 import Pnp.Karp.FeedbackArcNP
 import Pnp.Karp.FeedbackArcNPC
+import Pnp.Karp.Steiner
+import Pnp.Karp.SteinerRed
+import Pnp.Karp.SteinerProg
+import Pnp.Karp.SteinerVer
+import Pnp.Karp.SteinerNP
+import Pnp.Karp.SteinerNPC
+import Pnp.Karp.JobSeq
+import Pnp.Karp.JobSeqRed
+import Pnp.Karp.JobSeqProg
+import Pnp.Karp.JobSeqVer
+import Pnp.Karp.JobSeqNP
+import Pnp.Karp.JobSeqNPC
