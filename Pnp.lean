@@ -147,3 +147,15 @@ import Pnp.Karp.DHamVer
 import Pnp.Karp.DHamNP
 import Pnp.Karp.DHamProg
 import Pnp.Karp.DHamNPC
+import Pnp.Karp.Tsp
+import Pnp.Karp.TspRed
+import Pnp.Karp.TspProg
+import Pnp.Karp.TspVer
+import Pnp.Karp.TspNP
+import Pnp.Karp.TspNPC
+import Pnp.Karp.HPath
+import Pnp.Karp.HPathRed
+import Pnp.Karp.HPathProg
+import Pnp.Karp.HPathVer
+import Pnp.Karp.HPathNP
+import Pnp.Karp.HPathNPC
