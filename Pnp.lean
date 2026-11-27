@@ -82,3 +82,5 @@ import Pnp.KarpLipton.Collapse
 import Pnp.CookLevin.Shape
 import Pnp.CookLevin.FunBridge
 import Pnp.CookLevin.TabLocal
+import Pnp.CookLevin.ShapeSat
+import Pnp.CookLevin.TabInst
