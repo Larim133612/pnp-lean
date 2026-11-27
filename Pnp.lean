@@ -96,3 +96,10 @@ import Pnp.Karp.CliqueNP
 import Pnp.Karp.CliqueGen
 import Pnp.Karp.CliqueProg
 import Pnp.Karp.CliqueNPC
+import Pnp.Karp.IndSet
+import Pnp.Karp.IndSetVer
+import Pnp.Karp.IndSetNP
+import Pnp.Karp.IndSetNPC
+import Pnp.Karp.VertexCover
+import Pnp.Karp.VertexCoverProg
+import Pnp.Karp.VertexCoverNPC
