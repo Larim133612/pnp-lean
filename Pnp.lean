@@ -267,3 +267,12 @@ import Pnp.Karp.BinPackingProg
 import Pnp.Karp.BinPackingVer
 import Pnp.Karp.BinPackingNP
 import Pnp.Karp.BinPackingNPC
+import Pnp.Karp.ThreePart
+import Pnp.Karp.ThreePartArith
+import Pnp.Karp.ThreePartFwd
+import Pnp.Karp.ThreePartBwd
+import Pnp.Karp.ThreePartRed
+import Pnp.Karp.ThreePartProg
+import Pnp.Karp.ThreePartVer
+import Pnp.Karp.ThreePartNP
+import Pnp.Karp.ThreePartNPC
