@@ -141,3 +141,9 @@ import Pnp.Karp.KnapVer
 import Pnp.Karp.KnapNP
 import Pnp.Karp.KnapProg
 import Pnp.Karp.KnapsackNPC
+import Pnp.Karp.DHam
+import Pnp.Karp.DHamRed
+import Pnp.Karp.DHamVer
+import Pnp.Karp.DHamNP
+import Pnp.Karp.DHamProg
+import Pnp.Karp.DHamNPC
