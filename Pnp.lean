@@ -71,3 +71,4 @@ import Pnp.CookLevin.CircuitForm
 import Pnp.KarpLipton.Search
 import Pnp.KarpLipton.Verifier
 import Pnp.KarpLipton.KarpLipton
+import Pnp.KarpLipton.Equiv
