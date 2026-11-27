@@ -58,3 +58,4 @@ import Pnp.Derandomization.Lautemann
 import Pnp.Derandomization.ValiantVazirani
 import Pnp.TM2.Projection
 import Pnp.Derandomization.PSubsetBPP
+import Pnp.TM2.Compose
