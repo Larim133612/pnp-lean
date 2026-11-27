@@ -103,3 +103,10 @@ import Pnp.Karp.IndSetNPC
 import Pnp.Karp.VertexCover
 import Pnp.Karp.VertexCoverProg
 import Pnp.Karp.VertexCoverNPC
+import Pnp.Karp.Color
+import Pnp.Karp.ColorRed
+import Pnp.Karp.ColorVer
+import Pnp.Karp.ColorNP
+import Pnp.Karp.ColorGen
+import Pnp.Karp.ColorProg
+import Pnp.Karp.ColorNPC
