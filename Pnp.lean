@@ -2,6 +2,7 @@ import Pnp.Upstream.Millennium
 import Pnp.Upstream.PolynomialHierarchy
 import Pnp.Circuits.Basic
 import Pnp.Circuits.Multi
+import Pnp.Circuits.Majority
 import Pnp.Formulas.Khrapchenko
 import Pnp.Monotone.Sunflower
 import Pnp.Monotone.Circuit
@@ -46,3 +47,4 @@ import Pnp.Oracle.Shift
 import Pnp.Oracle.FromNP
 import Pnp.Oracle.NPEquiv
 import Pnp.NaturalProofs.GGM
+import Pnp.NaturalProofs.GoldreichLevin
