@@ -226,3 +226,16 @@ import Pnp.Karp.FeedbackVSProg
 import Pnp.Karp.FeedbackVSVer
 import Pnp.Karp.FeedbackVSNP
 import Pnp.Karp.FeedbackVSNPC
+import Pnp.Karp.MaxCut
+import Pnp.Karp.MaxCutRed
+import Pnp.Karp.MaxCutGen
+import Pnp.Karp.MaxCutProg
+import Pnp.Karp.MaxCutVer
+import Pnp.Karp.MaxCutNP
+import Pnp.Karp.MaxCutNPC
+import Pnp.Karp.FeedbackArc
+import Pnp.Karp.FeedbackArcRed
+import Pnp.Karp.FeedbackArcProg
+import Pnp.Karp.FeedbackArcVer
+import Pnp.Karp.FeedbackArcNP
+import Pnp.Karp.FeedbackArcNPC
