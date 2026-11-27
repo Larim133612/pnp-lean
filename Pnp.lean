@@ -59,3 +59,5 @@ import Pnp.Derandomization.ValiantVazirani
 import Pnp.TM2.Projection
 import Pnp.Derandomization.PSubsetBPP
 import Pnp.TM2.Compose
+import Pnp.TM2.Homomorphism
+import Pnp.Derandomization.LautemannList
