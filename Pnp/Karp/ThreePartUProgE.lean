@@ -1,9 +1,11 @@
-import Pnp.Karp.ThreePartUProgB
+import Pnp.Karp.ThreePartUProgD
 
 /-!
-# Unary 3-PARTITION reduction program, part E: the transformer computes the instance
+# Unary 3-PARTITION reduction program, part E: the constant stacks
 
-`tpup_F_DMI`: on the 3DM instance `DMI w`, the transformer `tpup_F` outputs `TPUI w`.
+`tpup_kC` builds, from `QQ = false^q` (stack `4`) and `false^K` (stack `6`), the constant
+stacks `18`–`25` (`false^n` for the counts of `tpup_KH`, `23` holding `false^M`, `24`
+`false^L`) and the power stacks `26 + j` (`R ^ j` printed `pos`).
 -/
 
 set_option linter.unusedSimpArgs false
@@ -13,141 +15,207 @@ namespace Pnp.Karp.ThreePartU
 open Function Pnp.Relativize Pnp.Relativize.Struct Pnp.CookLevin SatSym Pnp.Karp.Clique
   Pnp.Karp.SubsetSum Pnp.Karp.BinPacking Pnp.Karp.ThreeDM Pnp.Karp.ThreePart
 
-/-- The unary row of an item. -/
-abbrev tpupe_row (q M : ℕ) (x : El) : List SatSym := uRow (uval q M x)
+/-! ## Accumulating `false`s -/
 
-theorem tpupe_item {cnt : ℕ → ℕ} {q M : ℕ} (ip : ℕ → ℕ × ℕ) (x : El) (sp : List (List ℕ))
-    (hs : sp = tpup_sp ip x) (hF : tpup_FH cnt q M)
-    (hI : ∀ c' < 3, tpup_okS cnt q (ip c') (shI x c'))
-    (hL : ∀ c' < 3, tpup_okS cnt M (5, 6) (shL x c')) :
-    tpup_itO cnt (uR M) sp = tpupe_row q M x ++ [sep] := by
-  subst hs; exact tpup_sp_val ip x hF hI hL
+/-- Append the stacks `srcs` onto `d`. -/
+def tpup_acc (d : ℕ) : List ℕ → Cmd
+  | [] => .skip
+  | a :: l => .seq (copyVia a d 3) (tpup_acc d l)
 
-theorem tpupe_blkO_eq {q M : ℕ} (cnt : ℕ → ℕ) :
-    ∀ (its : List (List (List ℕ))) (xs : List El),
-    List.Forall₂ (fun ds x => tpup_itO cnt (uR M) ds = tpupe_row q M x ++ [sep]) its xs →
-    tpup_blkO cnt (uR M) its = (xs.map (tpupe_row q M)).flatMap (· ++ [sep])
-  | [], [], _ => rfl
-  | p :: ps, x :: xs, h => by
-    rcases List.forall₂_cons.1 h with ⟨h1, h2⟩
-    simp only [tpup_blkO, List.flatMap_cons, List.map_cons] at h1 ⊢
-    rw [h1]
-    exact congrArg _ (tpupe_blkO_eq cnt ps xs h2)
+/-- Push `k` times `false` onto `d`. -/
+def tpup_pushN (d : ℕ) : ℕ → Cmd
+  | 0 => .skip
+  | k + 1 => .seq (.push d false) (tpup_pushN d k)
 
-theorem tpupe_pf_oh {q a : ℕ} (h : a < q) : tpup_pf (ohB q a) = a := by
-  rw [← tpp_tagB q a h, tagB, tpup_pf_tag]
+/-- `d := false^(Σ |srcs| + k)`. -/
+def tpup_stp (d : ℕ) (srcs : List ℕ) (k : ℕ) : Cmd := .seq (tpup_acc d srcs) (tpup_pushN d k)
 
-theorem tpupe_sf_oh {q a : ℕ} (h : a < q) : (tpup_sf (ohB q a)).length = q - 1 - a := by
-  rw [← tpp_tagB q a h, tagB, tpup_sf_tag, List.length_replicate]
+theorem tpup_ex_acc {d : ℕ} (hd3 : d ≠ 3) (W : ℕ) : ∀ (l : List ℕ) (σ : ℕ → Str) (m : ℕ),
+    σ 3 = [] → σ d = List.replicate m false →
+    (∀ a ∈ l, a ≠ d ∧ a ≠ 3 ∧ σ a = List.replicate (σ a).length false ∧ (σ a).length ≤ W) →
+    ExecLe (tpup_acc d l) σ
+      (.norm (update σ d (List.replicate (m + (l.map fun a => (σ a).length).sum) false)))
+      (l.length * (5 * W + 4) + 1)
+  | [], σ, m, _, hd, _ => (ExecLe.skip σ).cast (by congr 1; simp [← hd]) (by simp)
+  | a :: l, σ, m, h3, hd, hs => by
+    obtain ⟨had, ha3, hae, haW⟩ := hs a List.mem_cons_self
+    have p1 := ExecLe.of (exec_copyVia had ha3 hd3 σ h3)
+    have ih := tpup_ex_acc hd3 W l (update σ d (σ a ++ σ d)) ((σ a).length + m)
+      (by rw [update_of_ne (by omega), h3])
+      (by rw [update_self, hd, hae, List.length_replicate, List.replicate_add])
+      (fun b hb => by
+        obtain ⟨h1, h2, h3, h4⟩ := hs b (List.mem_cons_of_mem _ hb)
+        rw [update_of_ne h1]; exact ⟨h1, h2, h3, h4⟩)
+    refine (p1.seq_norm ih).cast ?_ ?_
+    · congr 1; rw [update_idem]; congr 2
+      have : (l.map fun b => (update σ d (σ a ++ σ d) b).length) =
+          l.map fun b => (σ b).length := List.map_congr_left (fun b hb => by
+        rw [update_of_ne (hs b (List.mem_cons_of_mem _ hb)).1])
+      rw [this]; simp; omega
+    · simp only [List.length_cons]; nlinarith
 
-theorem tpupe_row_eq (q M t : ℕ) (_ht : t < M) (x : ℕ × ℕ × ℕ)
-    (hx : x.1 < q ∧ x.2.1 < q ∧ x.2.2 < q) :
-    tpup_rowO q M (triRow q x) t = ((triBlk t x).map (tpupe_row q M)).flatMap (· ++ [sep]) := by
-  obtain ⟨a, b, c⟩ := x
-  obtain ⟨ha, hb, hc⟩ := hx
-  dsimp only at ha hb hc
-  have hr : (triRow q (a, b, c)).map tpp_bb = ohB q a ++ ohB q b ++ ohB q c := by
-    simp [triRow, tpp_oh_bb]
-  have hR : ((triRow q (a, b, c)).map tpp_bb).reverse =
-      (ohB q c).reverse ++ (ohB q b).reverse ++ (ohB q a).reverse := by
-    rw [hr]; simp
-  have eC : (((triRow q (a, b, c)).map tpp_bb).reverse.take q).reverse = ohB q c := by
-    rw [hR, List.append_assoc, List.take_left' (by simp)]; simp
-  have eB : ((((triRow q (a, b, c)).map tpp_bb).reverse.drop q).take q).reverse = ohB q b := by
-    rw [hR, List.append_assoc, List.drop_left' (by simp), List.take_left' (by simp)]; simp
-  have eA : ((((triRow q (a, b, c)).map tpp_bb).reverse.drop q).drop q).reverse = ohB q a := by
-    rw [hR, List.append_assoc, List.drop_left' (by simp), List.drop_left' (by simp)]; simp
-  unfold tpup_rowO
-  simp only []
-  rw [eA, eB, eC]
-  have pa := tpupe_pf_oh ha; have pb := tpupe_pf_oh hb; have pc := tpupe_pf_oh hc
-  have sa := tpupe_sf_oh ha; have sb := tpupe_sf_oh hb; have sc := tpupe_sf_oh hc
-  have hF : tpup_FH (tpup_rc q M t (ohB q a) (ohB q b) (ohB q c)) q M := by
-    simp [tpup_FH, tpup_rc, tpup_fc]
-  apply tpupe_blkO_eq
-  simp only [tpup_rowSp, triBlk, List.map_cons, List.map_nil, List.forall₂_cons,
-    List.Forall₂.nil, and_true]
-  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
-    refine tpupe_item tpup_ipR _ _ ?_ hF ?_ ?_ <;>
-    first
-    | rfl
-    | (intro c' hc'; interval_cases c' <;>
-        simp [tpup_okS, shI, shL, tpup_ipR, tpup_rc, pa, pb, pc, sa, sb, sc])
+theorem tpup_ex_pushN (d : ℕ) : ∀ (k : ℕ) (σ : ℕ → Str) (m : ℕ), σ d = List.replicate m false →
+    ExecLe (tpup_pushN d k) σ (.norm (update σ d (List.replicate (m + k) false))) (k + 1)
+  | 0, σ, m, hd => (ExecLe.skip σ).cast (by congr 1; simp [← hd]) (by simp)
+  | k + 1, σ, m, hd => by
+    have p1 := ExecLe.push d false σ
+    have ih := tpup_ex_pushN d k (update σ d (false :: σ d)) (m + 1)
+      (by rw [update_self, hd, List.replicate_succ])
+    refine (p1.seq_norm ih).cast ?_ (by omega)
+    congr 1; rw [update_idem]; congr 2; omega
 
-theorem tpupe_gad_eq (q K M c e : ℕ) (hc : c < 3) (_he : e < q) (_hP : K + c * q + e < M) :
-    tpup_blkO (tpup_gc q M (K + c * q + e) e) (uR M) (tpup_gadSp c) =
-      ((gadBlk q K c e).map (tpupe_row q M)).flatMap (· ++ [sep]) := by
-  have hF : tpup_FH (tpup_gc q M (K + c * q + e) e) q M := by
-    simp [tpup_FH, tpup_gc, tpup_fc]
-  apply tpupe_blkO_eq
-  interval_cases c <;>
-  simp only [tpup_gadSp, gadBlk, List.map_cons, List.map_nil, List.forall₂_cons,
-    List.Forall₂.nil, and_true] <;>
-  refine ⟨?_, ?_, ?_⟩ <;>
-    refine tpupe_item (fun _ => (12, 13)) _ _ ?_ hF ?_ ?_ <;>
-    first
-    | rfl
-    | (intro c' hc'; interval_cases c' <;> simp [tpup_okS, shI, shL, tpup_gc])
+theorem tpup_ex_stp {d : ℕ} (hd3 : d ≠ 3) (W : ℕ) (l : List ℕ) (k : ℕ) (σ : ℕ → Str)
+    (h3 : σ 3 = []) (hd : σ d = [])
+    (hs : ∀ a ∈ l, a ≠ d ∧ a ≠ 3 ∧ σ a = List.replicate (σ a).length false ∧ (σ a).length ≤ W) :
+    ExecLe (tpup_stp d l k) σ
+      (.norm (update σ d (List.replicate ((l.map fun a => (σ a).length).sum + k) false)))
+      (l.length * (5 * W + 4) + k + 2) := by
+  have p1 := tpup_ex_acc hd3 W l σ 0 h3 (by rw [hd]; rfl) hs
+  have p2 := tpup_ex_pushN d k _ (0 + (l.map fun a => (σ a).length).sum) (update_self d _ σ)
+  refine (p1.seq_norm p2).cast ?_ (by omega)
+  congr 1; rw [update_idem]; congr 2; omega
 
-theorem tpupe_gadO_eq (q K M c : ℕ) (hc : c < 3) (hM : K + 3 * q ≤ M) :
-    tpup_gadO q K M c = (((List.range q).flatMap fun e => gadBlk q K c e).map
-      (tpupe_row q M)).flatMap (· ++ [sep]) := by
-  unfold tpup_gadO
-  rw [List.map_flatMap, List.flatMap_assoc]
-  apply List.flatMap_congr
-  intro e he
-  rw [List.mem_range] at he
-  apply tpupe_gad_eq q K M c e hc he
-  have : c * q + q ≤ 3 * q := by
-    have := Nat.mul_le_mul_right q (show c + 1 ≤ 3 by omega); rw [Nat.add_mul] at this; omega
-  omega
+/-! ## The power stacks -/
 
-theorem tpupe_bO_eq (q M : ℕ) : tpup_bO q M = uRow (uB M) ++ [sep] := by
-  simp only [tpup_bO, tpup_blkO, tpup_bSp, List.flatMap_cons, List.flatMap_nil, List.append_nil,
-    tpup_itO, tpup_iv_eq, pow_zero, one_mul, uB]
-  simp [tpup_fc]
+theorem tpup_pow_le' (R : ℕ) (hR : 1 ≤ R) (j : ℕ) (hj : j ≤ 8) : R ^ j ≤ R ^ 8 :=
+  Nat.pow_le_pow_right hR hj
 
-theorem tpupe_rows_eq (q M : ℕ) : ∀ (ts : List (ℕ × ℕ × ℕ)) (t : ℕ), t + ts.length ≤ M →
-    (∀ x ∈ ts, x.1 < q ∧ x.2.1 < q ∧ x.2.2 < q) →
-    tpup_rowsO q M (ts.map (triRow q)) t =
-      (((List.range ts.length).flatMap fun l => triBlk (t + l) (ts.getD l (0, 0, 0))).map
-        (tpupe_row q M)).flatMap (· ++ [sep])
-  | [], t, _, _ => rfl
-  | x :: ts, t, h, hx => by
-    have ih := tpupe_rows_eq q M ts (t + 1) (by simp at h; omega)
-      (fun y hy => hx y (List.mem_cons_of_mem _ hy))
-    simp only [List.map_cons, tpup_rowsO, List.length_cons, List.range_succ_eq_map,
-      List.flatMap_cons, List.flatMap_map, List.getD_cons_zero, List.getD_cons_succ,
-      Nat.add_zero, List.map_append, List.flatMap_append]
-    have hf : (fun a => triBlk (t + (a + 1)) (ts.getD a (0, 0, 0))) =
-        fun l => triBlk (t + 1 + l) (ts.getD l (0, 0, 0)) :=
-      funext fun l => by rw [show t + (l + 1) = t + 1 + l by omega]
-    rw [hf, ih, tpupe_row_eq q M t (by simp at h; omega) x (hx x List.mem_cons_self),
-      List.flatMap_map, List.flatMap_map]
+def tpup_powC : ℕ → Cmd
+  | 0 => .skip
+  | j + 1 => .seq (tpup_powC j) (tpup_rep 25 (26 + j) (27 + j))
 
-/-- **The transformer maps the 3DM instance to the unary 3-PARTITION instance.** -/
-theorem tpup_F_DMI (w : List SatSym) : tpup_F (DMI w) = TPUI w := by
-  have hc : clauses (DMI w) = List.replicate (qB w) zero :: triRows w := by
-    unfold DMI
-    apply Pnp.Karp.Clique.clauses_flatMap
-    intro c hc
-    rcases List.mem_cons.1 hc with rfl | hc
-    · simp
-    · simp only [triRows, List.mem_map] at hc
-      obtain ⟨t, -, rfl⟩ := hc
-      simp only [triRow, oh, List.mem_append, List.mem_map, not_or]
-      refine ⟨⟨?_, ?_⟩, ?_⟩ <;> rintro ⟨i, -, hi⟩ <;> split_ifs at hi
-  have hlt := dr_tris_lt w
-  unfold tpup_F tpup_Fc
-  rw [hc]
-  simp only [List.headD_cons, List.tail_cons, List.length_replicate, triRows, List.length_map]
-  unfold TPUI TPUW els mT
-  set q := qB w
-  set ts := tris w
-  rw [tpupe_rows_eq q _ ts 0 (by omega) hlt, tpp_range3, tpupe_gadO_eq q _ _ 0 (by omega) le_rfl,
-    tpupe_gadO_eq q _ _ 1 (by omega) le_rfl, tpupe_gadO_eq q _ _ 2 (by omega) le_rfl,
-    tpupe_bO_eq]
-  simp only [List.map_append, List.flatMap_append, Nat.zero_add, List.map_cons, List.map_nil,
-    List.flatMap_cons, List.flatMap_nil, List.append_nil, List.append_assoc]
+def tpup_powT (R : ℕ) : ℕ := 5 * R + 4 + (R * (5 * (2 * R ^ 8) + 5) + 2)
+
+theorem tpup_ex_powC (R : ℕ) (hR : 1 ≤ R) (σ : ℕ → Str) (h3 : σ 3 = []) (h7 : σ 7 = [])
+    (h25 : (σ 25).length = R) (h26 : σ 26 = rv [pos])
+    (hz : ∀ i, 1 ≤ i → i ≤ 8 → σ (26 + i) = []) : ∀ j ≤ 8, ∃ σ',
+    ExecLe (tpup_powC j) σ (.norm σ') (j * tpup_powT R + 1) ∧
+    (∀ i ≤ j, σ' (26 + i) = rv (List.replicate (R ^ i) pos)) ∧
+    (∀ x, (x < 27 ∨ 26 + j < x) → σ' x = σ x) := by
+  intro j
+  induction j with
+  | zero =>
+    intro _
+    refine ⟨σ, (ExecLe.skip σ).cast rfl (by simp), fun i hi => ?_, fun _ _ => rfl⟩
+    obtain rfl : i = 0 := by omega
+    simpa using h26
+  | succ j ih =>
+    intro hj
+    obtain ⟨σ', p1, hp, hf⟩ := ih (by omega)
+    have e7 : σ' 7 = [] := by rw [hf 7 (by omega), h7]
+    have e3 : σ' 3 = [] := by rw [hf 3 (by omega), h3]
+    have p2 := tpup_ex_rep (c := 25) (p := 26 + j) (d := 27 + j) (by norm_num) (by norm_num)
+      (by omega) (by omega) (by omega) (by omega) (by omega) σ' e7 e3
+    have e25 : (σ' 25).length = R := by rw [hf 25 (by omega), h25]
+    have e27 : σ' (27 + j) = [] := by
+      rw [hf _ (by omega), show 27 + j = 26 + (j + 1) by omega, hz _ (by omega) hj]
+    rw [e25, hp j le_rfl, e27] at p2
+    have ev : (List.replicate R (rv (List.replicate (R ^ j) pos))).flatten ++ [] =
+        rv (List.replicate (R ^ (j + 1)) pos) := by
+      have := tpup_rv_rep [] (R ^ j) R
+      simp only [rv, List.flatMap_nil, List.reverse_nil, List.nil_append] at this ⊢
+      rw [this, pow_succ', ]
+    rw [ev] at p2
+    refine ⟨_, p1.seq_norm p2 |>.mono ?_, fun i hi => ?_, fun x hx => ?_⟩
+    · have hl : (rv (List.replicate (R ^ j) pos)).length = 2 * R ^ j := by
+        simp [rv, length_flatMap_ic, ic]; ring
+      rw [hl]
+      have := tpup_pow_le' R hR j (by omega)
+      unfold tpup_powT
+      nlinarith
+    · rcases Nat.lt_or_ge i (j + 1) with h | h
+      · rw [update_of_ne (by omega)]; exact hp i (by omega)
+      · obtain rfl : i = j + 1 := by omega
+        rw [show 26 + (j + 1) = 27 + j by omega, update_self]
+    · rw [update_of_ne (by omega)]; exact hf x (by omega)
+
+/-! ## The constants -/
+
+theorem tpup_ex_stp' {d : ℕ} (hd3 : d ≠ 3) (W : ℕ) (l : List ℕ) (k v : ℕ) (σ : ℕ → Str)
+    (h3 : σ 3 = []) (hd : σ d = [])
+    (hs : ∀ a ∈ l, a ≠ d ∧ a ≠ 3 ∧ σ a = List.replicate (σ a).length false ∧ (σ a).length ≤ W)
+    (hv : (l.map fun a => (σ a).length).sum + k = v) :
+    ExecLe (tpup_stp d l k) σ (.norm (update σ d (List.replicate v false)))
+      (l.length * (5 * W + 4) + k + 2) := by
+  rw [← hv]; exact tpup_ex_stp hd3 W l k σ h3 hd hs
+
+def tpup_kC : Cmd :=
+  .seq (tpup_stp 23 [6, 4, 4, 4] 0) (.seq (tpup_stp 20 [23, 23, 23, 23, 23] 2)
+  (.seq (tpup_stp 19 [20, 6, 4, 4] 0) (.seq (tpup_stp 24 [23, 23, 23] 1)
+  (.seq (tpup_stp 18 [24] 1) (.seq (tpup_stp 21 [24, 24, 24] 0) (.seq (tpup_stp 22 [] 1)
+  (.seq (tpup_stp 25 [24, 24, 24, 24, 24, 24, 24, 24, 24] 1)
+  (.seq (pushList 26 (rv [pos])) (tpup_powC 8)))))))))
+
+def tpup_kT (R : ℕ) : ℕ := 29 * (5 * R + 4) + 30 + 8 * tpup_powT R
+
+theorem tpup_ex_kC (q K : ℕ) (σ : ℕ → Str) (h3 : σ 3 = []) (h7 : σ 7 = [])
+    (h4 : σ 4 = List.replicate q false) (h6 : σ 6 = List.replicate K false)
+    (hz : ∀ j, 18 ≤ j → j ≤ 34 → σ j = []) :
+    ∃ σ', ExecLe tpup_kC σ (.norm σ') (tpup_kT (uR (K + 3 * q))) ∧ (∀ j < 18, σ' j = σ j) ∧
+      tpup_KH σ' q (K + 3 * q) := by
+  set M := K + 3 * q with hM
+  set R := uR M with hR
+  have hLR : 3 * uL M + 1 ≤ R := tpup_uL_le M
+  have hL : uL M = 3 * M + 1 := rfl
+  have hRL : R = 9 * uL M + 1 := rfl
+  set σ1 := update σ 23 (List.replicate M false)
+  have p1 := tpup_ex_stp' (d := 23) (by norm_num) R [6, 4, 4, 4] 0 M σ h3 (hz _ (by omega) (by omega))
+    (by intro a ha; simp at ha; rcases ha with rfl | rfl <;> simp [h4, h6] <;> omega)
+    (by simp [h4, h6]; omega)
+  set σ2 := update σ1 20 (List.replicate (2 * uL M - M) false)
+  have p2 := tpup_ex_stp' (d := 20) (by norm_num) R [23, 23, 23, 23, 23] 2 (2 * uL M - M) σ1
+    (by simp [σ1, h3]) (by simp [σ1, hz]) (by intro a ha; simp at ha; subst ha; simp [σ1]; omega)
+    (by simp [σ1]; omega)
+  set σ3 := update σ2 19 (List.replicate (2 * uL M - q) false)
+  have p3 := tpup_ex_stp' (d := 19) (by norm_num) R [20, 6, 4, 4] 0 (2 * uL M - q) σ2
+    (by simp [σ2, σ1, h3]) (by simp [σ2, σ1, hz])
+    (by intro a ha; simp at ha; rcases ha with rfl | rfl | rfl <;> simp [σ2, σ1, h4, h6] <;> omega)
+    (by simp [σ2, σ1, h4, h6]; omega)
+  set σ4 := update σ3 24 (List.replicate (uL M) false)
+  have p4 := tpup_ex_stp' (d := 24) (by norm_num) R [23, 23, 23] 1 (uL M) σ3
+    (by simp [σ3, σ2, σ1, h3]) (by simp [σ3, σ2, σ1, hz])
+    (by intro a ha; simp at ha; subst ha; simp [σ3, σ2, σ1]; omega)
+    (by simp [σ3, σ2, σ1]; omega)
+  set σ5 := update σ4 18 (List.replicate (uL M + 1) false)
+  have p5 := tpup_ex_stp' (d := 18) (by norm_num) R [24] 1 (uL M + 1) σ4
+    (by simp [σ4, σ3, σ2, σ1, h3]) (by simp [σ4, σ3, σ2, σ1, hz])
+    (by intro a ha; simp at ha; subst ha; simp [σ4]; omega)
+    (by simp [σ4])
+  set σ6 := update σ5 21 (List.replicate (3 * uL M) false)
+  have p6 := tpup_ex_stp' (d := 21) (by norm_num) R [24, 24, 24] 0 (3 * uL M) σ5
+    (by simp [σ5, σ4, σ3, σ2, σ1, h3]) (by simp [σ5, σ4, σ3, σ2, σ1, hz])
+    (by intro a ha; simp at ha; subst ha; simp [σ5, σ4]; omega)
+    (by simp [σ5, σ4]; omega)
+  set σ7 := update σ6 22 (List.replicate 1 false)
+  have p7 := tpup_ex_stp' (d := 22) (by norm_num) R [] 1 1 σ6
+    (by simp [σ6, σ5, σ4, σ3, σ2, σ1, h3]) (by simp [σ6, σ5, σ4, σ3, σ2, σ1, hz])
+    (by simp) (by simp)
+  set σ8 := update σ7 25 (List.replicate R false)
+  have p8 := tpup_ex_stp' (d := 25) (by norm_num) R [24, 24, 24, 24, 24, 24, 24, 24, 24] 1 R σ7
+    (by simp [σ7, σ6, σ5, σ4, σ3, σ2, σ1, h3]) (by simp [σ7, σ6, σ5, σ4, σ3, σ2, σ1, hz])
+    (by intro a ha; simp at ha; subst ha; simp [σ7, σ6, σ5, σ4]; omega)
+    (by simp [σ7, σ6, σ5, σ4]; omega)
+  have p9 := ExecLe.of (exec_pushList 26 (rv [pos]) σ8)
+  have e26 : σ8 26 = [] := by simp [σ8, σ7, σ6, σ5, σ4, σ3, σ2, σ1, hz]
+  rw [e26, List.append_nil] at p9
+  set σ9 := update σ8 26 (rv [pos])
+  obtain ⟨σ', p10, hp, hf⟩ := tpup_ex_powC R (tpup_R_pos M) σ9
+    (by simp [σ9, σ8, σ7, σ6, σ5, σ4, σ3, σ2, σ1, h3])
+    (by simp [σ9, σ8, σ7, σ6, σ5, σ4, σ3, σ2, σ1, h7])
+    (by simp [σ9, σ8]) (by simp [σ9])
+    (fun i h1 h2 => by
+      simp only [σ9, σ8, σ7, σ6, σ5, σ4, σ3, σ2, σ1, update_apply]
+      repeat rw [if_neg (by omega)]
+      exact hz (26 + i) (by omega) (by omega)) 8 le_rfl
+  refine ⟨σ', (p1.seq_norm (p2.seq_norm (p3.seq_norm (p4.seq_norm (p5.seq_norm (p6.seq_norm
+    (p7.seq_norm (p8.seq_norm (p9.seq_norm p10))))))))).mono ?_, fun j hj => ?_, ?_⟩
+  · have : (rv [pos]).length = 2 := by simp [rv, ic]
+    rw [this]; simp only [List.length_cons, List.length_nil]; unfold tpup_kT; omega
+  · rw [hf j (by omega)]
+    simp [σ9, σ8, σ7, σ6, σ5, σ4, σ3, σ2, σ1, show j ≠ 26 by omega, show j ≠ 25 by omega,
+      show j ≠ 24 by omega, show j ≠ 23 by omega, show j ≠ 22 by omega, show j ≠ 21 by omega,
+      show j ≠ 20 by omega, show j ≠ 19 by omega, show j ≠ 18 by omega]
+  · refine ⟨?_, ?_, ?_, ?_, ?_, fun j hj => hp j (by omega)⟩ <;> rw [hf _ (by omega)] <;>
+      simp [σ9, σ8, σ7, σ6, σ5, σ4, σ3, σ2, σ1]
 
 end Pnp.Karp.ThreePartU

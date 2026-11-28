@@ -48,6 +48,16 @@ theorem tpup_rowSp_CH {σ K : ℕ → Str} {q M V t : ℕ} {A B C : List Bool} (
   · intro c' hc'
     interval_cases c' <;> simp [tpup_ipR, tpup_rc, tpup_ok, h14, h9, h16, h10, h17, h11] <;> omega
 
+theorem tpup_rowB_T {r q Z V a b c a' b' c' pa pb pc l : ℕ} (h1 : a' ≤ a) (h2 : b' ≤ b)
+    (h3 : c' ≤ c) (h4 : pa ≤ a) (h5 : pb ≤ b) (h6 : pc ≤ c) (ha : a ≤ Z) (hb : b ≤ Z)
+    (hc : c ≤ Z) (hr : r ≤ Z) (hq : q ≤ Z) (hl : l ≤ Z) (hZ : Z ≤ V) :
+    4 * r + 4 + (8 * q + 6 + (8 * q + 6 + (2 * (l - q - q) + 2 + (2 * a + 2 + (2 * b + 2 +
+      (2 * c + 2 + (12 * (200 * (V + 1) ^ 2) + 1 + (2 * a' + 2 + (2 * b' + 2 + (2 * c' + 2 +
+      (2 * pa + 2 + (2 * pb + 2 + (2 * pc + 2 + (1 + 2)))))))))))))) ≤ 3000 * (V + 1) ^ 2 := by
+  have hX : V + 1 ≤ (V + 1) ^ 2 := Nat.le_self_pow (by norm_num) _
+  generalize (V + 1) ^ 2 = X at hX ⊢
+  omega
+
 theorem tpup_ex_rowB (q M t Z : ℕ) (r : List SatSym) (rest : Str) (s : tpup_S) (E : List SatSym)
     (hs : sep ∉ r) (hM : s.Mn = (r ++ [sep]).flatMap ic ++ rest) (hT : s.T = []) (hX : s.X = [])
     (hQ : s.QQ = List.replicate q false) (hP : s.PRE = List.replicate t false)
@@ -143,12 +153,6 @@ theorem tpup_ex_rowB (q M t Z : ℕ) (r : List SatSym) (rest : Str) (s : tpup_S)
   · have h12 : tpup_rowSp.length = 12 := rfl
     simp only [h12, s9, s8, s7, s6, s5, s4, s3, s2, s1, tpup_st9, tpup_st10, tpup_st11,
       tpup_st14, tpup_st16, tpup_st17, List.length_replicate, List.length_drop, List.length_reverse]
-    have := tpup_sf_le Aa; have := tpup_sf_le Bb; have := tpup_sf_le Cc
-    have := tpup_pf_le Aa; have := tpup_pf_le Bb; have := tpup_pf_le Cc
-    have hX2 : V + 1 ≤ (V + 1) ^ 2 := Nat.le_self_pow (by norm_num) _
     unfold tpup_rowT
-    clear p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 p13 p14 p15 p16 hK eO
-    clear_value V s9 s8 s7 s6 s5 s4 s3 s2 s1 Aa Bb Cc RW0
-    generalize (V + 1) ^ 2 = X at hX2 ⊢
-    clear h12
-    omega
+    exact tpup_rowB_T (tpup_sf_le Aa) (tpup_sf_le Bb) (tpup_sf_le Cc) (tpup_pf_le Aa)
+      (tpup_pf_le Bb) (tpup_pf_le Cc) hAl hBl hCl hZ1 hqZ (hRl ▸ hZ1) hZV
