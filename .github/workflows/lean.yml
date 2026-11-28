@@ -158,6 +158,7 @@ jobs:
           #print axioms Pnp.Karp.ThreePartU.tpu_np_complete
           #print axioms Pnp.Karp.BinPackU.ubp_np_complete
           #print axioms Pnp.Karp.FourPartU.fpu_np_complete
+          #print axioms Pnp.Karp.SeqRD.srd_np_complete
           LEAN
           lake env lean /tmp/Axioms.lean | tee /tmp/axioms.txt
           if grep -v -E 'propext|Classical.choice|Quot.sound' /tmp/axioms.txt | grep -q 'depends on axioms'; then exit 1; fi
